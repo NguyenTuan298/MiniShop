@@ -8,36 +8,45 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy dữ liệu theme hiện tại từ context
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         leading: Padding(
-          padding: const EdgeInsets.all(1.0),
-          child: Image.asset('assets/images/logo.png'), // Thay bằng logo của bạn
+          // Tăng padding một chút để logo không quá sát lề
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset('assets/images/logo1.png'),
         ),
-        leadingWidth: 50,
-        title: const Text("Minishop"),
+        leadingWidth: 200, // Giữ nguyên chiều rộng theo yêu cầu cũ
         centerTitle: false,
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const WelcomeBanner(),
-              const SizedBox(height: 24),
-              const Text(
-                'Tin nổi bật',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textColor,
-                ),
+        // Để WelcomeBanner có thể full-width, nên di chuyển Padding vào trong
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const WelcomeBanner(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 24),
+                  Text(
+                    'Tin nổi bật',
+                    // *** SỬA LỖI Ở ĐÂY ***
+                    // Sử dụng một kiểu văn bản từ theme hiện tại.
+                    // titleLarge là một lựa chọn tốt cho tiêu đề của một khu vực.
+                    // Nó sẽ tự động có màu sắc và font weight đúng cho cả light/dark mode.
+                    style: theme.textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  const NewsCard(),
+                ],
               ),
-              const SizedBox(height: 16),
-              const NewsCard(),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

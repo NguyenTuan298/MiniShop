@@ -3,8 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/controllers/dashboard_controller.dart';
-import 'package:minishop/views/category/category_list_view.dart'; // Thêm import
+import 'package:minishop/views/cart/cart_view.dart';
+import 'package:minishop/views/category/category_list_view.dart';
 import 'package:minishop/views/home/home_view.dart';
+import 'package:minishop/views/order/order_history_view.dart';
+import 'package:minishop/views/profile/profile_view.dart';
 
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});
@@ -15,22 +18,28 @@ class DashboardView extends StatelessWidget {
 
     final List<Widget> screens = [
       const HomeView(),
-      const CategoryListView(), // <-- Thay thế widget placeholder
-      const Center(child: Text("Giỏ Hàng")),
-      const Center(child: Text("Đơn Đặt Hàng")),
-      const Center(child: Text("Hồ Sơ")),
+      const CategoryListView(),
+      const CartView(),
+      const OrderHistoryView(), // <-- Thay thế placeholder
+      const ProfileView(),
     ];
 
     return Scaffold(
+      // Body sẽ hiển thị màn hình tương ứng với tab được chọn
+      // IndexedStack giữ state của các tab không bị mất khi chuyển đổi
       body: Obx(() => IndexedStack(
         index: controller.tabIndex.value,
         children: screens,
       )),
+
+      // Thanh điều hướng dưới cùng
       bottomNavigationBar: Obx(
             () => BottomNavigationBar(
           onTap: controller.changeTabIndex,
           currentIndex: controller.tabIndex.value,
-          // Giữ nguyên các items
+          type: BottomNavigationBarType.fixed, // Để hiển thị tất cả label
+          selectedItemColor: Theme.of(context).primaryColor,
+          unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Trang chủ'),
             BottomNavigationBarItem(icon: Icon(Icons.apps_outlined), label: 'Thể Loại'),
