@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/controllers/product_controller.dart';
+import 'package:minishop/modules/product/product_controller.dart';
 import 'package:minishop/widgets/product_card.dart';
 
 class ProductGridView extends StatelessWidget {

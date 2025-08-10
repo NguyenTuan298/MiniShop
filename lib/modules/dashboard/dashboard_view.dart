@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/controllers/dashboard_controller.dart';
-import 'package:minishop/views/cart/cart_view.dart';
-import 'package:minishop/views/category/category_list_view.dart';
-import 'package:minishop/views/home/home_view.dart';
-import 'package:minishop/views/order/order_history_view.dart';
-import 'package:minishop/views/profile/profile_view.dart';
+import 'package:minishop/modules/dashboard/dashboard_controller.dart';
+import 'package:minishop/modules/cart/cart_view.dart';
+import 'package:minishop/modules/category/category_list_view.dart';
+import 'package:minishop/modules/home/home_view.dart';
+import 'package:minishop/modules/order/order_history_view.dart';
+import 'package:minishop/modules/profile/profile_view.dart';
 
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});

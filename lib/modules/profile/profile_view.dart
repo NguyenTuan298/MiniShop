@@ -1,17 +1,20 @@
-// lib/views/profile/settings_view.dart
+// lib/views/profile/profile_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/controllers/settings_controller.dart';
+import 'package:minishop/modules/profile/profile_controller.dart';
+import 'package:minishop/utils/theme.dart';
 
-class SettingsView extends StatelessWidget {
-  const SettingsView({super.key});
+class ProfileView extends StatelessWidget {
+  const ProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SettingsController());
+    // Khởi tạo và tìm controller cho màn hình này
+    final controller = Get.put(ProfileController());
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -23,23 +26,26 @@ class SettingsView extends StatelessWidget {
                   children: [
                     _buildAvatarSection(),
                     const Divider(height: 40, thickness: 1),
-                    _buildMenuItem(
-                      title: 'Chế độ sáng/ tối',
-                      onTap: controller.switchTheme,
+                    _buildProfileMenuItem(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'Đơn hàng của tôi',
+                      onTap: controller.navigateToMyOrders,
                     ),
-                    _buildMenuItem(
-                      title: 'Đổi mật khẩu',
-                      onTap: controller.changePassword,
+                    _buildProfileMenuItem(
+                      icon: Icons.info_outline,
+                      title: 'Chỉnh sửa thông tin',
+                      onTap: controller.editProfile,
                     ),
-                    _buildMenuItem(
-                      title: 'Xóa tài khoản',
-                      onTap: controller.deleteAccount,
+                    _buildProfileMenuItem(
+                      icon: Icons.settings_outlined,
+                      title: 'Cài Đặt',
+                      onTap: controller.goToSettings,
                     ),
-                    _buildMenuItem(
+                    _buildProfileMenuItem(
+                      icon: Icons.logout,
                       title: 'Log out',
                       onTap: controller.logout,
-                      color: Colors.red,
-                      icon: Icons.logout,
+                      color: Colors.red, // Màu đặc biệt cho nút logout
                     ),
                   ],
                 ),
@@ -70,23 +76,30 @@ class SettingsView extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.orange.withOpacity(0.3),
+                blurRadius: 10,
+                spreadRadius: 2,
+              )
+            ],
           ),
           child: const Icon(Icons.person_outline, color: Colors.white, size: 48),
         ),
         const SizedBox(height: 16),
         const Text(
-          'Cài Đặt',
+          'User 1',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 
-  Widget _buildMenuItem({
+  Widget _buildProfileMenuItem({
+    required IconData icon,
     required String title,
     required VoidCallback onTap,
     Color color = Colors.black,
-    IconData? icon,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -96,19 +109,18 @@ class SettingsView extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: Colors.grey[200],
             borderRadius: BorderRadius.circular(30),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (icon != null) ...[
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                title,
-                style: TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.w500),
+              Icon(icon, color: color),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontSize: 16, color: color, fontWeight: FontWeight.w500),
+                ),
               ),
             ],
           ),

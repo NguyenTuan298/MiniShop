@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/controllers/home_controller.dart';
+import 'package:minishop/modules/home/home_controller.dart';
 
 class NewsCard extends StatelessWidget {
   const NewsCard({super.key});

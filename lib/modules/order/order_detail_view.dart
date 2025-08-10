@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:minishop/controllers/order_controller.dart'; // *** THÊM IMPORT NÀY ***
+import 'package:minishop/modules/order/order_controller.dart'; // *** THÊM IMPORT NÀY ***
 import 'package:minishop/models/cart_item.dart';
 import 'package:minishop/models/order.dart';
 import 'package:minishop/routes.dart';

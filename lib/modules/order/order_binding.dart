@@ -1,7 +1,7 @@
 // lib/bindings/order_binding.dart
 
 import 'package:get/get.dart';
-import 'package:minishop/controllers/order_controller.dart';
+import 'package:minishop/modules/order/order_controller.dart';
 
 class OrderBinding extends Bindings {
   @override

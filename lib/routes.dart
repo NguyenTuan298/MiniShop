@@ -1,28 +1,28 @@
 // lib/routes.dart
 
 import 'package:get/get.dart';
-import 'package:minishop/bindings/dashboard_binding.dart';
-import 'package:minishop/bindings/order_binding.dart';
-import 'package:minishop/bindings/product_binding.dart';
-import 'package:minishop/views/dashboard/dashboard_view.dart';
-import 'package:minishop/views/home/product_grid_view.dart';
-import 'package:minishop/views/order/checkout_view.dart';
+import 'package:minishop/modules/dashboard/dashboard_binding.dart';
+import 'package:minishop/modules/order/order_binding.dart';
+import 'package:minishop/modules/product/product_binding.dart';
+import 'package:minishop/modules/dashboard/dashboard_view.dart';
+import 'package:minishop/modules/product/product_grid_view.dart';
+import 'package:minishop/modules/order/checkout_view.dart';
 // Sửa lại import, trỏ đến file mới và không cần bí danh 'as' nữa
-import 'package:minishop/views/order/order_history_view.dart';
-import 'package:minishop/views/order/order_detail_view.dart';
-import 'package:minishop/views/order/order_success_view.dart';
-import 'package:minishop/views/order/order_history_view.dart';
-import 'package:minishop/views/support/support_view.dart';
-import 'package:minishop/views/support/support_sent_view.dart';
-import 'views/home/home_view.dart';
-import 'package:minishop/views/profile/settings_view.dart';
-import 'package:minishop/bindings/edit_profile_binding.dart';
-import 'package:minishop/views/profile/edit_profile_view.dart';
+import 'package:minishop/modules/order/order_history_view.dart';
+import 'package:minishop/modules/order/order_detail_view.dart';
+import 'package:minishop/modules/order/order_success_view.dart';
+import 'package:minishop/modules/order/order_history_view.dart';
+import 'package:minishop/modules/support/support_view.dart';
+import 'package:minishop/modules/support/support_sent_view.dart';
+import 'package:minishop/modules/home/home_view.dart';
+import 'package:minishop/modules/profile/settings_view.dart';
+import 'package:minishop/modules/profile/edit_profile_binding.dart';
+import 'package:minishop/modules/profile/edit_profile_view.dart';
 
 
 class AppRoutes {
-  static const home = '/';
-  static const dashboard = '/';
+  static const home = '/home';
+  static const dashboard = '/dashboard';
   static const productGrid = '/product-grid';
   static const checkout = '/checkout';
   static const orderSuccess = '/order-success';

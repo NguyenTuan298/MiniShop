@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/controllers/dashboard_controller.dart';
+import 'package:minishop/modules/dashboard/dashboard_controller.dart';
 import 'package:minishop/routes.dart';
 
 class SupportController extends GetxController {

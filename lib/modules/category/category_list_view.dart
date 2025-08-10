@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/controllers/category_controller.dart';
+import 'package:minishop/modules/category/category_controller.dart';
 import 'package:minishop/widgets/category_card.dart';
 
 class CategoryListView extends StatelessWidget {

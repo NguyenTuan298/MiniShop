@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/controllers/edit_profile_controller.dart';
+import 'package:minishop/modules/profile/edit_profile_controller.dart';
 import 'package:minishop/utils/theme.dart';
 
 class EditProfileView extends StatelessWidget {

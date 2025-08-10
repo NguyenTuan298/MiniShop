@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:minishop/controllers/order_controller.dart';
+import 'package:minishop/modules/order/order_controller.dart';
 import 'package:minishop/models/order.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/utils/theme.dart';

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/controllers/support_controller.dart';
+import 'package:minishop/modules/support/support_controller.dart';
 import 'package:minishop/utils/theme.dart';
 
 class SupportSentView extends StatelessWidget {
