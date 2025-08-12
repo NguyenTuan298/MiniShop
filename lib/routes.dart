@@ -1,23 +1,28 @@
 // lib/routes.dart
 
 import 'package:get/get.dart';
-import 'package:minishop/modules/dashboard/dashboard_binding.dart';
-import 'package:minishop/modules/order/order_binding.dart';
-import 'package:minishop/modules/product/product_binding.dart';
-import 'package:minishop/modules/dashboard/dashboard_view.dart';
-import 'package:minishop/modules/product/product_grid_view.dart';
-import 'package:minishop/modules/order/checkout_view.dart';
+import 'package:minishop/modules/dashboard/binding/dashboard_binding.dart';
+import 'package:minishop/modules/order/binding/order_binding.dart';
+import 'package:minishop/modules/product/binding/product_binding.dart';
+import 'package:minishop/modules/dashboard/view/dashboard_view.dart';
+import 'package:minishop/modules/product/view/product_grid_view.dart';
+import 'package:minishop/modules/order/view/checkout_view.dart';
 // Sửa lại import, trỏ đến file mới và không cần bí danh 'as' nữa
-import 'package:minishop/modules/order/order_history_view.dart';
-import 'package:minishop/modules/order/order_detail_view.dart';
-import 'package:minishop/modules/order/order_success_view.dart';
-import 'package:minishop/modules/order/order_history_view.dart';
-import 'package:minishop/modules/support/support_view.dart';
-import 'package:minishop/modules/support/support_sent_view.dart';
-import 'package:minishop/modules/home/home_view.dart';
-import 'package:minishop/modules/profile/settings_view.dart';
-import 'package:minishop/modules/profile/edit_profile_binding.dart';
-import 'package:minishop/modules/profile/edit_profile_view.dart';
+import 'package:minishop/modules/order/view/order_history_view.dart';
+import 'package:minishop/modules/order/view/order_detail_view.dart';
+import 'package:minishop/modules/order/view/order_success_view.dart';
+import 'package:minishop/modules/support/view/support_view.dart';
+import 'package:minishop/modules/support/view/support_sent_view.dart';
+import 'package:minishop/modules/home/view/home_view.dart';
+import 'package:minishop/modules/profile/view/settings_view.dart';
+import 'package:minishop/modules/profile/binding/edit_profile_binding.dart';
+import 'package:minishop/modules/profile/view/edit_profile_view.dart';
+import 'modules/login/binding/login_binding.dart';
+import 'modules/login/view/login_view.dart';
+import 'modules/register/binding/register_binding.dart';
+import 'modules/register/view/register_view.dart';
+import 'modules/splash/binding/splash_binding.dart';
+import 'modules/splash/view/splash_view.dart';
 
 
 class AppRoutes {
@@ -32,6 +37,9 @@ class AppRoutes {
   static const supportSent = '/support-sent';
   static const settings = '/settings';
   static const editProfile = '/edit-profile';
+  static const splash = '/splash';
+  static const register = '/register';
+  static const login = '/login';
 }
 
 class AppPages {
@@ -88,6 +96,21 @@ class AppPages {
       name: AppRoutes.editProfile,
       page: () => const EditProfileView(),
       binding: EditProfileBinding(), // <-- Sử dụng binding mới
+    ),
+    GetPage(
+      name: AppRoutes.splash,
+      page: () => const SplashView(),
+      binding: SplashBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.register,
+      page: () => const RegisterView(),
+      binding: RegisterBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.login,
+      page: () => const LoginView(),
+      binding: LoginBinding(),
     ),
   ];
 }

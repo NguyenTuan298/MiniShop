@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/modules/cart/cart_controller.dart';
+import 'package:minishop/modules/cart/controller/cart_controller.dart';
 import 'package:minishop/models/cart_item.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/utils/theme.dart';

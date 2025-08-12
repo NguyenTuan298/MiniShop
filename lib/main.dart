@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/routes.dart';
 import 'package:minishop/utils/theme.dart';
-import 'package:get_storage/get_storage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +19,8 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeService().theme, // Lấy theme từ service
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.dashboard,
+      // initialRoute: AppRoutes.dashboard,
+      initialRoute: AppRoutes.splash,
       getPages: AppPages.routes,
     );
   }

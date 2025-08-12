@@ -28,6 +28,7 @@ class AppTheme {
   static const lightBlue = Color(0xFF42A5F5);   // Màu xanh sáng hơn cho Dark Mode
   static const textColorLight = Color(0xFF333333); // Màu chữ cho Light Mode
   static final textColorDark = Colors.white.withOpacity(0.87); // Màu chữ chính cho Dark Mode
+  static const backgroundColor = Color(0xFFF5F5F5); // Màu nền cho Light Mode
 
   // =======================================================================
   // LIGHT THEME
