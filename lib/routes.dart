@@ -17,10 +17,16 @@ import 'package:minishop/modules/home/view/home_view.dart';
 import 'package:minishop/modules/profile/view/settings_view.dart';
 import 'package:minishop/modules/profile/binding/edit_profile_binding.dart';
 import 'package:minishop/modules/profile/view/edit_profile_view.dart';
+import 'modules/OTP/binding/otp_binding.dart';
+import 'modules/OTP/view/otp_view.dart';
+import 'modules/forgot_password/binding/forgot_password_binding.dart';
+import 'modules/forgot_password/view/forgot_password_view.dart';
 import 'modules/login/binding/login_binding.dart';
 import 'modules/login/view/login_view.dart';
 import 'modules/register/binding/register_binding.dart';
 import 'modules/register/view/register_view.dart';
+import 'modules/reset_password/binding/reset_password_binding.dart';
+import 'modules/reset_password/view/reset_password_view.dart';
 import 'modules/splash/binding/splash_binding.dart';
 import 'modules/splash/view/splash_view.dart';
 
@@ -40,6 +46,9 @@ class AppRoutes {
   static const splash = '/splash';
   static const register = '/register';
   static const login = '/login';
+  static const forgotPassword = '/forgot-password';
+  static const otp = '/otp';
+  static const resetPassword = '/reset-password';
 }
 
 class AppPages {
@@ -111,6 +120,21 @@ class AppPages {
       name: AppRoutes.login,
       page: () => const LoginView(),
       binding: LoginBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.forgotPassword,
+      page: () => const ForgotPasswordView(),
+      binding: ForgotPasswordBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.otp,
+      page: () => const OtpView(),
+      binding: OtpBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.resetPassword,
+      page: () => const ResetPasswordView(),
+      binding: ResetPasswordBinding(),
     ),
   ];
 }

@@ -19,7 +19,6 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeService().theme, // Lấy theme từ service
       debugShowCheckedModeBanner: false,
-      // initialRoute: AppRoutes.dashboard,
       initialRoute: AppRoutes.splash,
       getPages: AppPages.routes,
     );

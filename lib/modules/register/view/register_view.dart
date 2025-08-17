@@ -58,15 +58,15 @@ class RegisterView extends GetView<RegisterController> {
 
                 _buildTextField(controller.phoneController, Icons.phone, "Nhập số điện thoại"),
                 const SizedBox(height: 12),
-                _buildTextField(controller.nameController, Icons.credit_card, "Nhập họ và tên đầy đủ"),
+                _buildTextField(controller.nameController, Icons.credit_card, "Nhập tên người dùng"),
                 const SizedBox(height: 12),
-                _buildTextField(controller.emailController, Icons.email, "Nhập email của bạn"),
+                _buildTextField(controller.emailController, Icons.email, "Nhập email"),
                 const SizedBox(height: 12),
 
                 Obx(() => _buildTextField(
                   controller.passwordController,
                   Icons.lock,
-                  "Tạo mật khẩu của bạn",
+                  "Tạo mật khẩu ",
                   obscureText: !controller.isPasswordVisible.value,
                   suffixIcon: IconButton(
                     icon: Icon(controller.isPasswordVisible.value

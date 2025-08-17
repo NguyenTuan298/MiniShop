@@ -128,14 +128,19 @@ class LoginView extends GetView<LoginController> {
                 const SizedBox(height: 12),
 
                 // Quên mật khẩu
-                Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    "Quên mật khẩu?",
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                GestureDetector(
+                  onTap: (){
+                    Get.toNamed('/forgot-password');
+                  },
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Quên mật khẩu?",
+                      style: TextStyle(
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
@@ -176,10 +181,10 @@ class LoginView extends GetView<LoginController> {
                       ),
                     ),
                     label: const Text(
-                      "Google",
+                      "Continue with Google",
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 19,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
