@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart'; // *** THÊM IMPORT NÀY ***
-import 'package:minishop/models/cart_item.dart';
-import 'package:minishop/models/order.dart';
 import 'package:minishop/routes.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/utils/theme.dart';
+
+import '../../../data/models/cart_item.dart';
+import '../../../data/models/order.dart';
 
 class OrderDetailView extends StatelessWidget {
   const OrderDetailView({super.key});

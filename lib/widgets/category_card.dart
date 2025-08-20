@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Thêm import
-import 'package:minishop/models/category.dart';
-import 'package:minishop/routes.dart'; // Thêm import
+import 'package:minishop/routes.dart';
+
+import '../data/models/category.dart'; // Thêm import
 
 class CategoryCard extends StatelessWidget {
   final Category category;

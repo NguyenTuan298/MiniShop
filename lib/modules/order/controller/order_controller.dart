@@ -4,9 +4,10 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:minishop/modules/cart/controller/cart_controller.dart';
 import 'package:minishop/modules/dashboard/controller/dashboard_controller.dart';
-import 'package:minishop/models/cart_item.dart';
-import 'package:minishop/models/order.dart';
 import 'package:minishop/routes.dart';
+
+import '../../../data/models/cart_item.dart';
+import '../../../data/models/order.dart';
 
 class OrderController extends GetxController {
   //========================================================================

@@ -1,7 +1,8 @@
 // lib/controllers/category_controller.dart
 
 import 'package:get/get.dart';
-import 'package:minishop/models/category.dart';
+
+import '../../../data/models/category.dart';
 
 class CategoryController extends GetxController {
   var isLoading = true.obs;

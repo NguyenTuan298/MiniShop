@@ -1,7 +1,7 @@
 // lib/controllers/product_controller.dart
 
 import 'package:get/get.dart';
-import 'package:minishop/models/product.dart';
+import '../../../data/models/product.dart';
 
 class ProductController extends GetxController {
   var isLoading = true.obs;

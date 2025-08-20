@@ -1,8 +1,9 @@
 // lib/controllers/cart_controller.dart
 
 import 'package:get/get.dart';
-import 'package:minishop/models/cart_item.dart';
-import 'package:minishop/models/product.dart';
+
+import '../../../data/models/cart_item.dart';
+import '../../../data/models/product.dart';
 
 class CartController extends GetxController {
   // Danh sách các sản phẩm trong giỏ, .obs để UI tự động cập nhật

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
-import 'package:minishop/models/order.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/utils/theme.dart';
 import 'package:minishop/routes.dart';
+
+import '../../../data/models/order.dart';
 
 class OrderHistoryView extends StatelessWidget {
   const OrderHistoryView({super.key});

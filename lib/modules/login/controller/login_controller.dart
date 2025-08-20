@@ -1,18 +1,44 @@
-import 'package:flutter/material.dart';
+// lib/controller/login_controller.dart
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
+import '../../../data/services/auth_service.dart';
+
 class LoginController extends GetxController {
+  final AuthService _authService = Get.find();
+
+  // Text controllers
   final phoneEmailController = TextEditingController();
   final passwordController = TextEditingController();
-  var isPasswordVisible = false.obs;
 
+  // Observables
+  final isPasswordVisible = false.obs;
+  final isLoading = false.obs;
+
+  // Toggle password visibility
   void togglePasswordVisibility() {
-    isPasswordVisible.value = !isPasswordVisible.value;
+    isPasswordVisible.toggle();
   }
 
-  void login() {
-    // TODO: Thêm logic đăng nhập
-    print("Login với: ${phoneEmailController.text}");
+  // Handle login
+  Future<void> login() async {
+    try {
+      print('Phone/Email: ${phoneEmailController.text.trim()}'); // Debug
+      print('Password: ${passwordController.text.trim()}'); // Debug
+      isLoading.value = true;
+      final success = await _authService.login(
+        phoneEmailController.text.trim(),
+        passwordController.text.trim(),
+      );
+
+      if (success) {
+        Get.offNamed('/dashboard');
+      } else {
+        // Get.snackbar('Lỗi', 'Đăng nhập thất bại');
+      }
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   @override
