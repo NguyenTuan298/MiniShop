@@ -124,10 +124,10 @@ class OtpView extends GetView<OtpController> {
                 SizedBox(
                   width: double.infinity,
                   child: Obx(() => ElevatedButton(
-                    // onPressed: controller.isLoading.value ? null : controller.verifyOtp,
-                    onPressed: (){
-                      Get.toNamed('/reset-password');
-                    },
+                    onPressed: controller.isLoading.value ? null : controller.verifyOtp,
+                    // onPressed: (){
+                    //   Get.toNamed('/reset-password');
+                    // },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue.shade700,
                       padding: const EdgeInsets.symmetric(vertical: 15),

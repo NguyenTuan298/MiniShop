@@ -62,4 +62,65 @@ class AuthService extends GetxService {
       return false;
     }
   }
+
+  Future<bool> forgotPassword(String phoneEmail) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/forgot-password'),
+        body: jsonEncode({'phoneEmail': phoneEmail}),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        // Get.snackbar("Thành công", "OTP mặc định là 111111");
+        return true;
+      } else {
+        Get.snackbar("Lỗi", jsonDecode(response.body)['error'] ?? 'Gửi OTP thất bại');
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar("Lỗi", "Kết nối đến server thất bại");
+      return false;
+    }
+  }
+
+  Future<bool> verifyOTP(String phoneEmail, String otp) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/verify-otp'),
+        body: jsonEncode({'phoneEmail': phoneEmail, 'otp': otp}),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        Get.snackbar("Lỗi", jsonDecode(response.body)['error'] ?? 'OTP không hợp lệ');
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar("Lỗi", "Kết nối đến server thất bại");
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String phoneEmail, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/reset-password'),
+        body: jsonEncode({'phoneEmail': phoneEmail, 'newPassword': newPassword}),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        Get.snackbar("Lỗi", jsonDecode(response.body)['error'] ?? 'Reset thất bại');
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar("Lỗi", "Kết nối đến server thất bại");
+      return false;
+    }
+  }
 }

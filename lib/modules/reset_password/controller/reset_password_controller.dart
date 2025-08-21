@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
+import '../../../data/services/auth_service.dart';  // Import AuthService
 
 class ResetPasswordController extends GetxController {
   // Text editing controllers
@@ -14,6 +15,13 @@ class ResetPasswordController extends GetxController {
   // Form key
   final formKey = GlobalKey<FormState>();
 
+  late String phoneEmail;
+
+  @override
+  void onInit() {
+    phoneEmail = Get.arguments as String;  // Get argument from previous screen
+    super.onInit();
+  }
 
   // Validate password
   String? validatePassword(String? value) {
@@ -40,16 +48,16 @@ class ResetPasswordController extends GetxController {
       try {
         isLoading.value = true;
 
-        // Simulate API call
-        await Future.delayed(const Duration(seconds: 2));
-
-        Get.offAllNamed('/login'); // Navigate to login after success
-        Get.snackbar(
-          'Thành công',
-          'Đặt lại mật khẩu thành công',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        bool success = await Get.find<AuthService>().resetPassword(phoneEmail, newPasswordController.text);  // Call resetPassword
+        if (success) {
+          Get.offAllNamed('/login'); // Navigate to login after success
+          Get.snackbar(
+            'Thành công',
+            'Đặt lại mật khẩu thành công',
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+        }
       } catch (e) {
         Get.snackbar(
           'Lỗi',

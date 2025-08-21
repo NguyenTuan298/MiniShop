@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
+import '../../../data/services/auth_service.dart';  // Import AuthService
 
 class ForgotPasswordController extends GetxController {
+  final AuthService _authService = Get.find<AuthService>();  // Get AuthService
   final phoneOrEmailController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   final isLoading = false.obs;
@@ -20,16 +22,18 @@ class ForgotPasswordController extends GetxController {
     if (formKey.currentState?.validate() ?? false) {
       try {
         isLoading.value = true;
-        // Gọi API khôi phục mật khẩu
-        await Future.delayed(const Duration(seconds: 2)); // Giả lập gọi API
-
-        Get.snackbar(
-          'Thành công',
-          'Hướng dẫn khôi phục đã được gửi đến ${phoneOrEmailController.text}',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        print('Submitting with phone/email: ${phoneOrEmailController.text}');
+        bool success = await _authService.forgotPassword(phoneOrEmailController.text);
+        print('API forgotPassword response: $success');
+        if (success) {
+          // Get.snackbar('Thành công', 'OTP mặc định là 111111');
+          print('Navigating to /otp with argument: ${phoneOrEmailController.text}');
+          Get.toNamed('/otp', arguments: phoneOrEmailController.text);
+        } else {
+          print('Navigation failed due to API response: $success');
+        }
       } catch (e) {
+        print('Error in submit: $e');
         Get.snackbar(
           'Lỗi',
           'Khôi phục mật khẩu thất bại: ${e.toString()}',

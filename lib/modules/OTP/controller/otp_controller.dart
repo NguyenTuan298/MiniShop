@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
+import '../../../data/services/auth_service.dart';  // Import AuthService
 
 class OtpController extends GetxController {
   // Controllers
@@ -10,8 +11,11 @@ class OtpController extends GetxController {
   final countdown = 60.obs;
   final canResend = false.obs;
 
+  late String phoneEmail;
+
   @override
   void onInit() {
+    phoneEmail = Get.arguments as String;  // Get argument from previous screen
     startCountdown();
     super.onInit();
   }
@@ -35,15 +39,16 @@ class OtpController extends GetxController {
 
     try {
       isLoading.value = true;
-      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-
-      Get.offAllNamed('/home'); // Navigate after success
-      Get.snackbar(
-        'Thành công',
-        'Xác thực OTP thành công',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      bool success = await Get.find<AuthService>().verifyOTP(phoneEmail, otpController.text);  // Call verifyOTP
+      if (success) {
+        Get.offNamed('/reset-password', arguments: phoneEmail);  // Navigate to reset
+        Get.snackbar(
+          'Thành công',
+          'Xác thực OTP thành công',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
       Get.snackbar(
         'Lỗi',
@@ -59,15 +64,16 @@ class OtpController extends GetxController {
   Future<void> resendOtp() async {
     try {
       isLoading.value = true;
-      await Future.delayed(const Duration(seconds: 1)); // Simulate resend
-
-      startCountdown();
-      Get.snackbar(
-        'Thành công',
-        'Đã gửi lại mã OTP',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      bool success = await Get.find<AuthService>().forgotPassword(phoneEmail);  // Resend OTP
+      if (success) {
+        startCountdown();
+        Get.snackbar(
+          'Thành công',
+          'Đã gửi lại mã OTP',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
       Get.snackbar(
         'Lỗi',
