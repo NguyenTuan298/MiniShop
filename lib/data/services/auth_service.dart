@@ -5,8 +5,9 @@ import 'dart:convert';
 
 class AuthService extends GetxService {
   // final String _baseUrl = 'http://localhost:3000/api/auth';
-  final String _baseUrl = 'http://192.168.1.7:3000/api/auth';
+  // final String _baseUrl = 'http://192.168.15.108:3000/api/auth';
   // final String _baseUrl = 'https://f21ad8b6569e.ngrok-free.app/api/auth';
+  final String _baseUrl = 'https://edfa2dbbf755.ngrok-free.app/api/auth';
 
   Future<bool> login(String phoneEmail, String password) async {
     try {

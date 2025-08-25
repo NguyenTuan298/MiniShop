@@ -1,19 +1,26 @@
-// lib/views/support/support_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/support/controller/support_controller.dart';
-import 'package:minishop/utils/theme.dart';
+// import 'package:minishop/utils/theme.dart'; // Giả sử AppTheme nằm ở đây
 
-class SupportView extends StatelessWidget {
+// FIX: Chuyển sang GetView để tuân thủ best practice của GetX
+class SupportView extends GetView<SupportController> {
   const SupportView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SupportController());
+    // FIX: Dòng này đã được loại bỏ. Controller giờ đây được truy cập trực tiếp
+    // thông qua 'controller' property của GetView.
+    // final controller = Get.put(SupportController());
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        // Thêm AppBar để người dùng có thể quay lại màn hình trước đó
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -57,10 +64,10 @@ class SupportView extends StatelessWidget {
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton(
+                  child: ElevatedButton( // Thay bằng ElevatedButton cho nổi bật
                     onPressed: controller.submitSupportRequest,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppTheme.primaryColor),
+                    style: ElevatedButton.styleFrom(
+                      // backgroundColor: AppTheme.primaryColor,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
@@ -75,6 +82,7 @@ class SupportView extends StatelessWidget {
     );
   }
 
+  //... các hàm helper _buildHeader và _buildTextField giữ nguyên ...
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
