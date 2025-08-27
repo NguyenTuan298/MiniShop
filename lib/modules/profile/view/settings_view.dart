@@ -1,5 +1,3 @@
-// lib/views/profile/settings_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/profile/controller/settings_controller.dart';
@@ -23,10 +21,12 @@ class SettingsView extends StatelessWidget {
                   children: [
                     _buildAvatarSection(),
                     const Divider(height: 40, thickness: 1),
-                    _buildMenuItem(
-                      title: 'Chế độ sáng/ tối',
-                      onTap: controller.switchTheme,
-                    ),
+
+                    // ================== THAY ĐỔI Ở ĐÂY ==================
+                    // Thay thế _buildMenuItem bằng widget mới có công tắc
+                    _buildThemeSwitcher(controller),
+                    // ======================================================
+
                     _buildMenuItem(
                       title: 'Đổi mật khẩu',
                       onTap: controller.changePassword,
@@ -50,6 +50,53 @@ class SettingsView extends StatelessWidget {
       ),
     );
   }
+
+  // ============== WIDGET HELPER MỚI VỚI CÔNG TẮC BẬT/TẮT ==============
+  /// Widget này tạo ra giao diện giống như ảnh bạn cung cấp.
+  /// Nó được bọc trong Obx để tự động cập nhật khi theme thay đổi.
+  Widget _buildThemeSwitcher(SettingsController controller) {
+    return Obx(
+          () => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(30),
+        ),
+        // SỬA ĐỔI: Dùng Stack để căn chỉnh vị trí
+        child: Stack(
+          alignment: Alignment.center, // Căn các widget con ra giữa theo mặc định
+            // Thay thế các children cũ trong Row bằng Stack
+            children: [
+              // Lớp dưới cùng: Chữ được căn ra giữa
+              const Center(
+                child: Text(
+                  'Chế độ sáng/ tối',
+                  style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500),
+                ),
+              ),
+
+              // Lớp trên cùng: Công tắc được căn về bên phải
+              Align(
+                alignment: Alignment.centerRight,
+                child: Switch(
+                  // Lấy giá trị (on/off) từ controller
+                  value: controller.isDarkMode.value,
+                  // Khi người dùng nhấn, gọi hàm trong controller
+                  onChanged: controller.switchTheme,
+                  // Tùy chỉnh màu sắc để giống trong ảnh
+                  activeColor: Colors.white,
+                  activeTrackColor: Colors.grey[600],
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey[400],
+                ),
+              ),
+            ],
+        ),
+      ),
+    );
+  }
+  // =======================================================================
+
 
   Widget _buildHeader() {
     return Padding(

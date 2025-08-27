@@ -35,9 +35,9 @@ class HomeController extends GetxController {
 
       // Gán dữ liệu giả lập (mock data)
       // Trong ứng dụng thật, dữ liệu này sẽ đến từ API
-      newsImageUrl.value = 'assets/images/noibat.png'; // Đảm bảo đường dẫn này đúng
+      newsImageUrl.value = 'assets/images/noibat.png'; // Đảm bảo bạn có ảnh này trong assets
       newsDescription.value =
-      'Chương trình ngày Thứ Hai Điện Tử diễn ra tập trung vào những ưu đãi khi mua sắm trực tuyến, đặc biệt là mặt hàng thời trang và phụ kiện. Vì thế nếu như là tín đồ mua sắm online thì chắc chắn không thể bỏ qua ngày Cyber Monday này.';
+      'Chương trình ngày Thứ Hai Điện Tử diễn ra tập trung vào những ưu đãi khi mua sắm trực tuyến, đặc biệt là mặt hàng thời trang và phụ kiện. Vì thế nếu như ai là tín đồ mua sắm online thì chắc chắn không thể bỏ qua ngày Cyber Monday này.';
 
     } catch (e) {
       // Xử lý lỗi nếu có

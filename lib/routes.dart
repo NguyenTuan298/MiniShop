@@ -12,6 +12,7 @@ import 'package:minishop/modules/order/view/order_history_view.dart';
 import 'package:minishop/modules/order/view/order_detail_view.dart';
 import 'package:minishop/modules/order/view/order_success_view.dart';
 import 'package:minishop/modules/support/view/support_view.dart';
+import 'package:minishop/modules/support/binding/support_binding.dart';
 import 'package:minishop/modules/support/view/support_sent_view.dart';
 import 'package:minishop/modules/home/view/home_view.dart';
 import 'package:minishop/modules/profile/view/settings_view.dart';
@@ -57,20 +58,24 @@ class AppPages {
       name: AppRoutes.dashboard,
       page: () => const DashboardView(),
       binding: DashboardBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.home,
       page: () => const HomeView(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.productGrid,
       page: () => const ProductGridView(),
       binding: ProductBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.checkout,
       page: () => const CheckoutView(),
       binding: OrderBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     // Sửa lại định nghĩa trang này
     GetPage(
@@ -78,63 +83,77 @@ class AppPages {
       // Trỏ đến đúng class OrderHistoryView từ file mới
       page: () => const OrderHistoryView(),
       binding: OrderBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.orderSuccess,
       page: () => const OrderSuccessView(),
       binding: OrderBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     // Thêm trang mới
     GetPage(
       name: AppRoutes.orderDetail,
       page: () => const OrderDetailView(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.support,
       page: () => const SupportView(),
+      binding: SupportBinding(), // Gắn binding tương ứng
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.supportSent,
       page: () => const SupportSentView(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.settings,
       page: () => const SettingsView(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.editProfile,
       page: () => const EditProfileView(),
       binding: EditProfileBinding(), // <-- Sử dụng binding mới
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.splash,
       page: () => const SplashView(),
       binding: SplashBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.register,
       page: () => const RegisterView(),
       binding: RegisterBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.login,
       page: () => const LoginView(),
       binding: LoginBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.forgotPassword,
       page: () => const ForgotPasswordView(),
       binding: ForgotPasswordBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.otp,
       page: () => const OtpView(),
       binding: OtpBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
     GetPage(
       name: AppRoutes.resetPassword,
       page: () => const ResetPasswordView(),
       binding: ResetPasswordBinding(),
+      transition: Transition.rightToLeftWithFade, // Thêm hiệu ứng chuyển cảnh
     ),
   ];
 }

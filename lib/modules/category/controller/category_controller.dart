@@ -6,7 +6,27 @@ import '../../../data/models/category.dart';
 
 class CategoryController extends GetxController {
   var isLoading = true.obs;
+  // Danh sách gốc, không bao giờ thay đổi sau khi fetch
   var categoryList = <Category>[].obs;
+  // BIẾN MỚI: Lưu trữ chuỗi người dùng nhập vào ô tìm kiếm
+  var searchQuery = ''.obs;
+  // HÀM GETTER MỚI: Trả về một danh sách đã được lọc dựa trên searchQuery
+  // View sẽ sử dụng danh sách này để hiển thị.
+  List<Category> get filteredCategories {
+    // Nếu ô tìm kiếm trống, trả về toàn bộ danh sách
+    if (searchQuery.isEmpty) {
+      return categoryList;
+    } else {
+      // Nếu không, lọc danh sách
+      return categoryList.where((category) {
+        // Chuyển cả tên danh mục và chuỗi tìm kiếm về chữ thường để tìm kiếm không phân biệt hoa/thường.
+        // Xóa ký tự '\n' khỏi tên danh mục để tìm kiếm chính xác hơn.
+        final categoryName = category.name.toLowerCase().replaceAll('\n', ' ');
+        final query = searchQuery.value.toLowerCase();
+        return categoryName.contains(query);
+      }).toList();
+    }
+  }
 
   @override
   void onInit() {
@@ -14,6 +34,10 @@ class CategoryController extends GetxController {
     super.onInit();
   }
 
+  // HÀM MỚI: Cập nhật giá trị cho searchQuery mỗi khi người dùng gõ
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
+  }
   /// Tải danh sách các danh mục.
   /// Trong thực tế, bạn sẽ gọi API ở đây.
   /// Hiện tại, chúng ta sẽ dùng dữ liệu giả lập (mock data).

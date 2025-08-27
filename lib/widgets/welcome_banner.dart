@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:minishop/modules/category/binding/category_binding.dart'; // Import binding vừa tạo
+import 'package:minishop/modules/category/view/category_list_view.dart'; // Import view cần đến
 import 'package:minishop/utils/theme.dart';
 
 class WelcomeBanner extends StatelessWidget {
@@ -35,36 +38,33 @@ class WelcomeBanner extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Đặt hàng dễ dàng, nhanh chóng',
-            style: TextStyle(
-              // *** SỬA Ở ĐÂY: Sử dụng màu chữ tương phản ***
-              color: theme.colorScheme.onPrimary,
-              fontSize: 14,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.white.withOpacity(0.9),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              // Logic để chuyển đến trang thể loại
-              // Ví dụ: Get.find<DashboardController>().changeTabIndex(1);
+              // *** ĐÂY LÀ ĐOẠN CODE ĐIỀU HƯỚNG ***
+              // Sử dụng Get.to() để chuyển đến CategoryListView.
+              // Đồng thời truyền vào 'binding' để đảm bảo CategoryController
+              // được khởi tạo đúng lúc cho view mới.
+              Get.to(() => const CategoryListView(), binding: CategoryBinding());
             },
             style: ElevatedButton.styleFrom(
-              // *** SỬA Ở ĐÂY: Cập nhật style của nút cho phù hợp theme ***
-              // Nền của nút là màu tương phản với banner
-              backgroundColor: theme.colorScheme.onPrimary,
-              // Chữ của nút có màu giống màu nền của banner
-              foregroundColor: theme.primaryColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+              backgroundColor: Colors.white,
+              foregroundColor: Theme.of(context).primaryColor,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text(
-              'Xem thể loại',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          )
+            child: const Text('Xem thể loại'),
+          ),
         ],
       ),
     );
   }
-  }
+}
