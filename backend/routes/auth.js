@@ -146,7 +146,7 @@ router.post('/login', async (req, res) => {
 //});
 
 router.post('/forgot-password', async (req, res) => {
-  const { phoneEmail } = req.body;
+  const { phoneEmail } = req.body || {};
 
   if (!phoneEmail) {
     return res.status(400).json({ error: 'Vui lòng nhập email hoặc số điện thoại' });
@@ -154,21 +154,19 @@ router.post('/forgot-password', async (req, res) => {
 
   try {
     const pool = await poolPromise;
-    const result = await pool.request()
+    const userResult = await pool.request()
       .input('phoneEmail', sql.VarChar, phoneEmail)
-      .query('SELECT * FROM Users WHERE email = @phoneEmail OR phone = @phoneEmail');
-
-    if (result.recordset.length === 0) {
+      .query('SELECT id FROM Users WHERE email = @phoneEmail OR phone = @phoneEmail');
+    if (userResult.recordset.length === 0) {
       return res.status(404).json({ error: 'Tài khoản không tồn tại' });
     }
 
-    const user = result.recordset[0];
-    const otp = generateOTP();
+    const userId = userResult.recordset[0].id;
+    const otp = '111111'; // OTP mặc định
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Hết hạn sau 10 phút
 
-    // Lưu OTP vào DB
     await pool.request()
-      .input('user_id', sql.Int, user.id)
+      .input('user_id', sql.Int, userId)
       .input('otp', sql.VarChar, otp)
       .input('expires_at', sql.DateTime, expiresAt)
       .query('INSERT INTO OTPs (user_id, otp, expires_at) VALUES (@user_id, @otp, @expires_at)');
@@ -176,7 +174,7 @@ router.post('/forgot-password', async (req, res) => {
     res.status(200).json({ message: 'OTP đã được tạo (mặc định 111111)' });
   } catch (err) {
     console.error('Forgot password error:', err);
-    res.status(500).json({ error: 'Gửi OTP thất bại' });
+    res.status(500).json({ error: 'Khôi phục mật khẩu thất bại' });
   }
 });
 
@@ -220,10 +218,10 @@ router.post('/verify-otp', async (req, res) => {
       return res.status(400).json({ error: 'OTP không hợp lệ hoặc hết hạn' });
     }
 
-    await pool.request()
-      .input('user_id', sql.Int, userId)
-      .input('otp', sql.VarChar, otp)
-      .query('DELETE FROM OTPs WHERE user_id = @user_id AND otp = @otp');
+    // await pool.request()
+    //   .input('user_id', sql.Int, userId)
+    //   .input('otp', sql.VarChar, otp)
+    //   .query('DELETE FROM OTPs WHERE user_id = @user_id AND otp = @otp');
 
     res.status(200).json({ message: 'OTP hợp lệ' });
   } catch (err) {
@@ -277,17 +275,18 @@ router.post('/verify-otp', async (req, res) => {
 // kHÔNG DÙNG bcrypt
 router.post('/reset-password', async (req, res) => {
   const { phoneEmail, newPassword } = req.body || {};
+
+  if (!phoneEmail || !newPassword) {
+    return res.status(400).json({ error: 'Vui lòng nhập đầy đủ thông tin' });
+  }
+
   try {
     const pool = await poolPromise;
-    const result = await pool.request()
+    await pool.request()
       .input('phoneEmail', sql.VarChar, phoneEmail)
-      .input('password', sql.VarChar, newPassword) // Sử dụng trực tiếp newPassword
-      .query('UPDATE Users SET password = @password WHERE email = @phoneEmail OR phone = @phoneEmail');
-    if (result.rowsAffected[0] > 0) {
-      res.status(200).json({ message: 'Đặt lại mật khẩu thành công' });
-    } else {
-      res.status(404).json({ error: 'Tài khoản không tồn tại' });
-    }
+      .input('newPassword', sql.VarChar, newPassword)
+      .query('UPDATE Users SET password = @newPassword WHERE email = @phoneEmail OR phone = @phoneEmail');
+    res.status(200).json({ message: 'Reset mật khẩu thành công' });
   } catch (err) {
     console.error('Reset password error:', err);
     res.status(500).json({ error: 'Đặt lại mật khẩu thất bại' });

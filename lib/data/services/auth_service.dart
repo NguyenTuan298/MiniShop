@@ -4,9 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AuthService extends GetxService {
-  // final String _baseUrl = 'http://localhost:3000/api/auth';
-  final String _baseUrl = 'http://192.168.1.7:3000/api/auth';
-  // final String _baseUrl = 'https://f21ad8b6569e.ngrok-free.app/api/auth';
+  final String _baseUrl = 'http://192.168.1.46:3000/api/auth'; // sử dụng IP này trên máy để chạy ứng dụng
+  // final String _baseUrl = 'https://456a47d7e538.ngrok-free.app/api/auth';
 
   Future<bool> login(String phoneEmail, String password) async {
     try {
@@ -63,44 +62,31 @@ class AuthService extends GetxService {
     }
   }
 
+// Forgot Password
   Future<bool> forgotPassword(String phoneEmail) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/forgot-password'),
-        body: jsonEncode({'phoneEmail': phoneEmail}),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        // Get.snackbar("Thành công", "OTP mặc định là 111111");
-        return true;
-      } else {
-        Get.snackbar("Lỗi", jsonDecode(response.body)['error'] ?? 'Gửi OTP thất bại');
-        return false;
-      }
-    } catch (e) {
-      Get.snackbar("Lỗi", "Kết nối đến server thất bại");
-      return false;
+    final response = await http.post(
+      Uri.parse('$_baseUrl/forgot-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'phoneEmail': phoneEmail}),
+    );
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Khôi phục mật khẩu thất bại');
     }
   }
 
+// Verify OTP
   Future<bool> verifyOTP(String phoneEmail, String otp) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/verify-otp'),
-        body: jsonEncode({'phoneEmail': phoneEmail, 'otp': otp}),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        Get.snackbar("Lỗi", jsonDecode(response.body)['error'] ?? 'OTP không hợp lệ');
-        return false;
-      }
-    } catch (e) {
-      Get.snackbar("Lỗi", "Kết nối đến server thất bại");
-      return false;
+    final response = await http.post(
+      Uri.parse('$_baseUrl/verify-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'phoneEmail': phoneEmail, 'otp': otp}),
+    );
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Xác thực OTP thất bại: ${jsonDecode(response.body)['error']}');
     }
   }
 

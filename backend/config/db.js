@@ -9,7 +9,7 @@ const config = {
   port: parseInt(process.env.DB_PORT),
   database: process.env.DB_NAME,
   options: {
-    encrypt: false, // Nếu dùng Azure thì true, local thì false
+    encrypt: true, // Nếu dùng Azure thì true, local thì false
     trustServerCertificate: true, // Để tránh lỗi certificate nếu local
   }
 };
