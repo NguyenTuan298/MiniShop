@@ -1,5 +1,5 @@
-// lib/controller/login_controller.dart
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/services/auth_service.dart';
@@ -26,16 +26,19 @@ class LoginController extends GetxController {
       print('Phone/Email: ${phoneEmailController.text.trim()}'); // Debug
       print('Password: ${passwordController.text.trim()}'); // Debug
       isLoading.value = true;
-      final success = await _authService.login(
+      final response = await _authService.login(
         phoneEmailController.text.trim(),
         passwordController.text.trim(),
       );
 
-      if (success) {
-        Get.offNamed('/dashboard');
+      if (response['message'] == 'Đăng nhập thành công') {
+        Get.offAllNamed('/dashboard'); // Chuyển đến dashboard sau khi đăng nhập thành công
+        Get.snackbar('Thành công', 'Đăng nhập thành công', backgroundColor: Colors.green, colorText: Colors.white);
       } else {
-        // Get.snackbar('Lỗi', 'Đăng nhập thất bại');
+        Get.snackbar('Lỗi', 'Đăng nhập thất bại: ${response['error'] ?? 'Không xác định'}', backgroundColor: Colors.red, colorText: Colors.white);
       }
+    } catch (e) {
+      Get.snackbar('Lỗi', 'Đăng nhập thất bại: ${e.toString()}', backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }

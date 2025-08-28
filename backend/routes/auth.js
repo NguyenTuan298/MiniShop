@@ -9,6 +9,33 @@ const { sql, poolPromise } = require('../config/db');
 const generateOTP = () => '111111';
 
 // Không dùng bcrypt
+// LOGIN
+router.post('/login', async (req, res) => {
+  const { phoneEmail, password } = req.body || {};
+
+  if (!phoneEmail || !password) {
+    return res.status(400).json({ error: 'Vui lòng nhập đầy đủ thông tin' });
+  }
+
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('phoneEmail', sql.VarChar, phoneEmail)
+      .input('password', sql.VarChar, password)
+      .query('SELECT id FROM Users WHERE (email = @phoneEmail OR phone = @phoneEmail) AND password = @password');
+    if (result.recordset.length > 0) {
+      const token = 'dummy-token-' + Date.now(); // Token dummy, thay bằng JWT trong production
+      res.status(200).json({ message: 'Đăng nhập thành công', token });
+    } else {
+      res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không đúng' });
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Đăng nhập thất bại' });
+  }
+});
+
+
 // REGISTER
 router.post('/register', async (req, res) => {
   const { phone, name, email, password } = req.body;
@@ -42,36 +69,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
-  console.log('Login request body:', req.body);
-  const { phoneEmail, password } = req.body || {};
-
-  if (!phoneEmail || !password) {
-    return res.status(400).json({ error: 'Vui lòng nhập đầy đủ thông tin' });
-  }
-
-  try {
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('phoneEmail', sql.VarChar, phoneEmail)
-      .query('SELECT * FROM Users WHERE email = @phoneEmail OR phone = @phoneEmail');
-
-    if (result.recordset.length === 0) {
-      return res.status(400).json({ error: 'Tài khoản không tồn tại' });
-    }
-
-    const user = result.recordset[0];
-    if (user.password !== password) {
-      return res.status(400).json({ error: 'Mật khẩu không đúng' });
-    }
-
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ message: 'Đăng nhập thành công', token });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Đăng nhập thất bại' });
-  }
-});
 
 
 // Sử dụng bcrypt

@@ -2,37 +2,41 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService extends GetxService {
   final String _baseUrl = 'http://192.168.1.46:3000/api/auth'; // sử dụng IP này trên máy để chạy ứng dụng
   // final String _baseUrl = 'https://456a47d7e538.ngrok-free.app/api/auth';
 
-  Future<bool> login(String phoneEmail, String password) async {
-    try {
-      final url = Uri.parse('$_baseUrl/login');
-      // print('Sending request to: $url'); // Debug
-      // print('Body: {"phoneEmail": "$phoneEmail", "password": "$password"}'); // Debug
-
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'phoneEmail': phoneEmail, 'password': password}),
-      );
-
-      // print('Response status: ${response.statusCode}'); // Debug
-      // print('Response body: ${response.body}'); // Debug
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        Get.snackbar('Lỗi', jsonDecode(response.body)['error'] ?? 'Đăng nhập thất bại');
-        return false;
-      }
-    } catch (e) {
-      print('Error: $e'); // Debug
-      Get.snackbar('Lỗi', 'Kết nối đến server thất bại');
-      return false;
+// Login
+  Future<Map<String, dynamic>> login(String phoneEmail, String password) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'phoneEmail': phoneEmail, 'password': password}),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'];
+      // Lưu token vào SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+      return data;
+    } else {
+      throw Exception('Đăng nhập thất bại');
     }
+  }
+
+  // Kiểm tra trạng thái đăng nhập
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('auth_token');
+  }
+
+  // Đăng xuất (xóa token)
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
   }
 
   Future<bool> register(
