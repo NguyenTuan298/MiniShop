@@ -9,6 +9,7 @@ class EditProfileController extends GetxController {
   late TextEditingController phoneController;
   late TextEditingController emailController;
   late TextEditingController genderController;
+  late TextEditingController addressController;
 
   // Dùng GlobalKey để quản lý Form và validate (nếu cần)
   final formKey = GlobalKey<FormState>();
@@ -22,6 +23,7 @@ class EditProfileController extends GetxController {
     phoneController = TextEditingController(text: '0123456789');
     emailController = TextEditingController(text: 'user1@email.com');
     genderController = TextEditingController(text: 'Nam');
+    addressController = TextEditingController(text: 'Quận 12, Tân Chánh HIệp');
   }
 
   /// Xử lý khi người dùng nhấn nút "Lưu thay đổi"
@@ -54,6 +56,7 @@ class EditProfileController extends GetxController {
     phoneController.dispose();
     emailController.dispose();
     genderController.dispose();
+    addressController.dispose();
     super.onClose();
   }
 }

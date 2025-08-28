@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/support/controller/support_controller.dart';
-// import 'package:minishop/utils/theme.dart'; // Giả sử AppTheme nằm ở đây
 
-// FIX: Chuyển sang GetView để tuân thủ best practice của GetX
+// Dùng GetView để truy cập controller qua 'controller'
 class SupportView extends GetView<SupportController> {
   const SupportView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // FIX: Dòng này đã được loại bỏ. Controller giờ đây được truy cập trực tiếp
-    // thông qua 'controller' property của GetView.
-    // final controller = Get.put(SupportController());
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      // KHÔNG set màu nền cứng -> theo theme
       appBar: AppBar(
-        // Thêm AppBar để người dùng có thể quay lại màn hình trước đó
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        // Không set background/icon màu cứng; để AppBarTheme quyết định
+        elevation: theme.appBarTheme.elevation ?? 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -64,11 +59,14 @@ class SupportView extends GetView<SupportController> {
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton( // Thay bằng ElevatedButton cho nổi bật
+                  child: ElevatedButton(
                     onPressed: controller.submitSupportRequest,
                     style: ElevatedButton.styleFrom(
-                      // backgroundColor: AppTheme.primaryColor,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: const Text('Gửi tin nhắn'),
@@ -82,14 +80,20 @@ class SupportView extends GetView<SupportController> {
     );
   }
 
-  //... các hàm helper _buildHeader và _buildTextField giữ nguyên ...
+  // --- Helpers ---
+
+  // Dùng Get.theme để không phải truyền BuildContext
   Widget _buildHeader() {
+    final theme = Get.theme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Image.asset('assets/images/logo1.png', height: 40),
         const SizedBox(height: 16),
-        const Text('Liên hệ hỗ trợ', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Text(
+          'Liên hệ hỗ trợ',
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }
@@ -101,20 +105,30 @@ class SupportView extends GetView<SupportController> {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
+    final theme = Get.theme;
+    final hintColor = theme.colorScheme.onSurface.withOpacity(0.5);
+    final fill = theme.colorScheme.surfaceVariant.withOpacity(
+      theme.brightness == Brightness.dark ? 0.35 : 1.0,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
           validator: validator,
+          style: theme.textTheme.bodyMedium,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400]),
+            hintStyle: theme.textTheme.bodyMedium?.copyWith(color: hintColor),
             filled: true,
-            fillColor: Colors.grey[200],
+            fillColor: fill,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,

@@ -9,25 +9,27 @@ class ProductGridView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ProductController>();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      // Không dùng AppBar ở đây nữa, chúng ta sẽ tạo header tùy chỉnh
+      // KHÔNG set backgroundColor cứng -> theo theme
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Header tùy chỉnh bao gồm logo, nút back và tiêu đề
-            _buildHeader(controller),
-
-            // 2. Lưới sản phẩm, dùng Expanded để lấp đầy không gian còn lại
+            _buildHeader(context, controller),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (controller.productList.isEmpty) {
-                  return const Center(
-                    child: Text('Chưa có sản phẩm trong danh mục này.'),
+                  return Center(
+                    child: Text(
+                      'Chưa có sản phẩm trong danh mục này.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
                   );
                 }
                 return GridView.builder(
@@ -52,45 +54,47 @@ class ProductGridView extends StatelessWidget {
     );
   }
 
-  /// Widget helper để xây dựng phần header tùy chỉnh
-  Widget _buildHeader(ProductController controller) {
+  /// Header tuỳ chỉnh tôn trọng theme (icon/text tự đổi màu theo light/dark)
+  Widget _buildHeader(BuildContext context, ProductController controller) {
+    final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Logo Minishop
-          // (Giả sử bạn có file logo.png trong assets/images)
-          Image.asset(
-            'assets/images/logo1.png',
-            height: 35,
-          ),
+          // Logo
+          Image.asset('assets/images/logo1.png', height: 35),
           const SizedBox(height: 8),
 
-          // Hàng chứa nút Back và Tiêu đề
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Tiêu đề được căn giữa bởi Stack
-              Obx(
-                    () => Text(
+          // Hàng chứa nút Back (trái) + Tiêu đề (giữa)
+          SizedBox(
+            height: 48,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Tiêu đề căn giữa
+                Obx(() => Text(
                   controller.categoryName.value,
-                  style: const TextStyle(
-                    color: Colors.black,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                  ),
+                )),
+                // Nút back căn trái
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    tooltip: 'Quay lại',
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.arrow_back),
+                    color: theme.appBarTheme.iconTheme?.color ??
+                        theme.iconTheme.color ??
+                        theme.colorScheme.onSurface,
                   ),
                 ),
-              ),
-              // Nút Back được căn về bên trái
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () => Get.back(),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

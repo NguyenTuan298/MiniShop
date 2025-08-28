@@ -1,9 +1,9 @@
+// lib/views/order/checkout_view.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/utils/format.dart';
-import 'package:minishop/utils/theme.dart';
-
 
 class CheckoutView extends StatelessWidget {
   const CheckoutView({super.key});
@@ -12,34 +12,36 @@ class CheckoutView extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<OrderController>();
 
-    // Nên gọi trong onInit của controller.
-    // Nếu cần gọi ở đây thì đảm bảo chỉ gọi 1 lần.
+    // Nên đặt trong onInit của controller; tạm thời gọi 1 lần ở đây
     controller.loadDataForCheckout();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      // Không set màu cứng -> theo theme
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeader(),
-              _buildQrCodeSection(),
+              _buildHeader(context),
+              _buildQrCodeSection(context),
               const SizedBox(height: 16),
-              _buildSection(child: _buildOrderSummary(controller)),
+              _buildSection(
+                context: context,
+                child: _buildOrderSummary(context, controller),
+              ),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _buildShippingInfo(controller)),
+                    Expanded(child: _buildShippingInfo(context, controller)),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildPaymentMethod(controller)),
+                    Expanded(child: _buildPaymentMethod(context, controller)),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-              _buildConfirmButton(controller),
+              _buildConfirmButton(context, controller),
               const SizedBox(height: 16),
             ],
           ),
@@ -48,51 +50,66 @@ class CheckoutView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         children: [
           Image.asset('assets/images/logo1.png', height: 40),
           const SizedBox(height: 8),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              const Text('Hóa Đơn',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: Get.back,
+          SizedBox(
+            height: 48,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  'Hóa Đơn',
+                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-              ),
-            ],
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: Get.back,
+                    icon: const Icon(Icons.arrow_back),
+                    color: theme.appBarTheme.iconTheme?.color
+                        ?? theme.iconTheme.color
+                        ?? theme.colorScheme.onSurface,
+                    tooltip: 'Quay lại',
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQrCodeSection() {
+  Widget _buildQrCodeSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final sub = theme.colorScheme.onSurface.withOpacity(0.7);
     return _buildSection(
+      context: context,
       child: Column(
         children: [
           Image.asset('assets/images/thanhtoan.png', width: 200),
           const SizedBox(height: 8),
-          Text('Chuyển khoản vào mã QR:',
-              style: TextStyle(color: Colors.grey[700])),
+          Text(
+            'Chuyển khoản vào mã QR:',
+            style: theme.textTheme.bodyMedium?.copyWith(color: sub),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildOrderSummary(OrderController controller) {
+  Widget _buildOrderSummary(BuildContext context, OrderController controller) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Tóm tắt đơn hàng',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Tóm tắt đơn hàng', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
 
         // items
@@ -101,22 +118,25 @@ class CheckoutView extends StatelessWidget {
               ? (item.quantity as RxInt).value
               : item.quantity as int;
           final itemName = '${item.product.name} (x$qty)';
-          final itemTotal = item.product.price * qty; // qty là int => OK
-          return _buildSummaryRow(itemName, AppFormatters.formatCurrency(itemTotal));
+          final itemTotal = item.product.price * qty;
+          return _buildSummaryRow(context, itemName, AppFormatters.formatCurrency(itemTotal));
         }),
 
-        const Divider(height: 20),
+        Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
 
         _buildSummaryRow(
+          context,
           'Tạm tính',
           AppFormatters.formatCurrency(controller.currentSubtotal),
         ),
         _buildSummaryRow(
+          context,
           'Vận chuyển',
           AppFormatters.formatCurrency(controller.currentShippingFee),
         ),
-        const Divider(height: 20),
+        Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
         _buildSummaryRow(
+          context,
           'Tổng cộng',
           AppFormatters.formatCurrency(controller.currentTotal),
           isBold: true,
@@ -125,33 +145,38 @@ class CheckoutView extends StatelessWidget {
     );
   }
 
-  Widget _buildShippingInfo(OrderController controller) {
+  Widget _buildShippingInfo(BuildContext context, OrderController controller) {
     return _buildInfoCard(
+      context: context,
       title: 'Thông tin giao hàng',
       children: [
-        _buildInfoRow('Họ Tên:', controller.userName),
-        _buildInfoRow('Địa Chỉ:', controller.address),
-        _buildInfoRow('SĐT:', controller.phoneNumber),
+        _buildInfoRow(context, 'Họ Tên:', controller.userName),
+        _buildInfoRow(context, 'Địa Chỉ:', controller.address),
+        _buildInfoRow(context, 'SĐT:', controller.phoneNumber),
       ],
     );
   }
 
-  Widget _buildPaymentMethod(OrderController controller) {
+  Widget _buildPaymentMethod(BuildContext context, OrderController controller) {
+    final theme = Theme.of(context);
+    final sub = theme.colorScheme.onSurface.withOpacity(0.6);
     return _buildInfoCard(
+      context: context,
       title: 'Phương thức thanh toán',
       children: [
-        _buildInfoRow('Mbbank:', '0334043054'),
-        _buildInfoRow('', 'Phan Quoc Hung'),
+        _buildInfoRow(context, 'Mbbank:', '0334043054'),
+        _buildInfoRow(context, '', 'Phan Quoc Hung'),
         const SizedBox(height: 8),
         Text(
           'hết hạn vào ngày ${controller.currentExpirationDate}',
-          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+          style: theme.textTheme.bodySmall?.copyWith(color: sub),
         ),
       ],
     );
   }
 
-  Widget _buildConfirmButton(OrderController controller) {
+  Widget _buildConfirmButton(BuildContext context, OrderController controller) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: SizedBox(
@@ -159,64 +184,85 @@ class CheckoutView extends StatelessWidget {
         child: OutlinedButton(
           onPressed: controller.completeOrder,
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppTheme.primaryColor),
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            side: BorderSide(color: theme.colorScheme.primary),
+            foregroundColor: theme.colorScheme.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          child: const Text(
-            'Đã thanh toán',
-            style: TextStyle(color: AppTheme.primaryColor),
-          ),
+          child: const Text('Đã thanh toán'),
         ),
       ),
     );
   }
 
-  // Helpers
-  Widget _buildSection({required Widget child}) => Container(
-    width: double.infinity,
-    color: Colors.grey[200],
-    padding:
-    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-    child: child,
-  );
+  // ---------------- Helpers dùng Theme ----------------
 
-  Widget _buildSummaryRow(String title, String value, {bool isBold = false}) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title, style: TextStyle(color: Colors.grey[700])),
-            Text(value,
-                style: TextStyle(
-                    fontWeight:
-                    isBold ? FontWeight.bold : FontWeight.normal)),
-          ],
-        ),
-      );
+  Widget _buildSection({required BuildContext context, required Widget child}) {
+    final theme = Theme.of(context);
+    final bg = theme.colorScheme.surfaceVariant.withOpacity(
+      theme.brightness == Brightness.dark ? 0.25 : 1.0,
+    );
+    return Container(
+      width: double.infinity,
+      color: bg,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+      child: child,
+    );
+  }
 
-  Widget _buildInfoCard(
-      {required String title, required List<Widget> children}) =>
-      Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(12)),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              ...children,
-            ]),
-      );
+  Widget _buildSummaryRow(BuildContext context, String title, String value, {bool isBold = false}) {
+    final theme = Theme.of(context);
+    final base = theme.colorScheme.onSurface;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: theme.textTheme.bodyMedium?.copyWith(color: base.withOpacity(0.8))),
+          Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: base,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  Widget _buildInfoRow(String title, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2.0),
-    child: Text('$title $value',
-        style: TextStyle(color: Colors.grey[700])),
-  );
+  Widget _buildInfoCard({
+    required BuildContext context,
+    required String title,
+    required List<Widget> children,
+  }) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(BuildContext context, String title, String value) {
+    final theme = Theme.of(context);
+    final sub = theme.colorScheme.onSurface.withOpacity(0.8);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Text(
+        title.isEmpty ? value : '$title $value',
+        style: theme.textTheme.bodyMedium?.copyWith(color: sub),
+      ),
+    );
+  }
 }
