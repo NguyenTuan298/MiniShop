@@ -4,6 +4,7 @@ import 'package:minishop/modules/cart/controller/cart_controller.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/widgets/cart_item_card.dart';
+import 'package:minishop/routes.dart';
 
 class CartView extends StatelessWidget {
   const CartView({super.key});
@@ -134,16 +135,18 @@ class CartView extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: orderController.completeOrder,
+                  onPressed: () {
+                    final orderController = Get.find<OrderController>();
+                    orderController.loadDataForCheckout();          // <-- chuẩn bị dữ liệu
+                    Get.toNamed(AppRoutes.orderInformation);        // <-- điều hướng
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   ),
-                  child: const Text('Tiến hành thanh toán', style: TextStyle(fontSize: 14)),
+                  child: const Text('Xác nhận đơn hàng', style: TextStyle(fontSize: 14)),
                 ),
               ),
               const SizedBox(width: 12),

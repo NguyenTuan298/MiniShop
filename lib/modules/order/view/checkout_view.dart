@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/utils/format.dart';
+import 'package:minishop/routes.dart';
+import 'package:minishop/modules/profile/service/profile_service.dart';
 
 class CheckoutView extends StatelessWidget {
   const CheckoutView({super.key});
@@ -146,16 +148,29 @@ class CheckoutView extends StatelessWidget {
   }
 
   Widget _buildShippingInfo(BuildContext context, OrderController controller) {
+    final profile = Get.find<ProfileService>();
     return _buildInfoCard(
       context: context,
       title: 'Thông tin giao hàng',
+      // Cho phép chỉnh sửa tại Checkout
       children: [
-        _buildInfoRow(context, 'Họ Tên:', controller.userName),
-        _buildInfoRow(context, 'Địa Chỉ:', controller.address),
-        _buildInfoRow(context, 'SĐT:', controller.phoneNumber),
+        Row(
+          children: [
+            Expanded(child: _buildInfoRow(context, 'Họ Tên:', '')),
+            TextButton(
+              onPressed: () => Get.toNamed(AppRoutes.orderInformation),
+              child: const Text('Chỉnh sửa'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Obx(() => _buildInfoRow(context, '', profile.name.value)),
+        Obx(() => _buildInfoRow(context, 'Địa Chỉ:', profile.address.value)),
+        Obx(() => _buildInfoRow(context, 'SĐT:', profile.phone.value)),
       ],
     );
   }
+
 
   Widget _buildPaymentMethod(BuildContext context, OrderController controller) {
     final theme = Theme.of(context);
@@ -235,6 +250,7 @@ class CheckoutView extends StatelessWidget {
     required BuildContext context,
     required String title,
     required List<Widget> children,
+    Widget? trailing, // << thêm
   }) {
     final theme = Theme.of(context);
     return Container(
@@ -246,7 +262,14 @@ class CheckoutView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
           const SizedBox(height: 8),
           ...children,
         ],

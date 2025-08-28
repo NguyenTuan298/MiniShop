@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/routes.dart';
+import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'package:minishop/utils/format.dart';
 
 import '../../../data/models/cart_item.dart';
@@ -46,7 +47,7 @@ class OrderDetailView extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(child: _buildShippingInfo(context, controller)),
+                      Expanded(child: _buildShippingInfo(context, controller)), // KHÓA CHỈNH SỬA Ở ĐÂY
                       const SizedBox(width: 16),
                       Expanded(child: _buildPaymentMethod(context, controller)),
                     ],
@@ -184,18 +185,24 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 
+  /// ĐÃ KHÓA CHỈNH SỬA: không có nút "Chỉnh sửa" nữa.
   Widget _buildShippingInfo(BuildContext context, OrderController controller) {
-    final theme = Theme.of(context);
+    final profile = Get.find<ProfileService>();
     return _buildInfoCard(
       context: context,
       title: 'Thông tin giao hàng',
+      trailing: TextButton(
+        onPressed: () => Get.toNamed(AppRoutes.editProfile),
+        child: const Text('Hồ sơ'),
+      ),
       children: [
-        _buildInfoRow(context, 'Họ Tên:', controller.userName),
-        _buildInfoRow(context, 'Địa Chỉ:', controller.address),
-        _buildInfoRow(context, 'SĐT:', controller.phoneNumber),
+        Obx(() => _buildInfoRow(context, 'Họ Tên:', profile.name.value)),
+        Obx(() => _buildInfoRow(context, 'Địa Chỉ:', profile.address.value)),
+        Obx(() => _buildInfoRow(context, 'SĐT:', profile.phone.value)),
       ],
     );
   }
+
 
   Widget _buildPaymentMethod(BuildContext context, OrderController controller) {
     final theme = Theme.of(context);
@@ -281,6 +288,7 @@ class OrderDetailView extends StatelessWidget {
     required BuildContext context,
     required String title,
     required List<Widget> children,
+    Widget? trailing, // vẫn giữ cho tái sử dụng, nhưng không dùng ở đây
   }) {
     final theme = Theme.of(context);
     return Container(
@@ -292,7 +300,14 @@ class OrderDetailView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
           const SizedBox(height: 8),
           ...children,
         ],
@@ -312,3 +327,4 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 }
+
