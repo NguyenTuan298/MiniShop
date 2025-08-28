@@ -2,58 +2,82 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:minishop/modules/profile/service/profile_service.dart';
 
 class EditProfileController extends GetxController {
-  // Dùng TextEditingController để quản lý các ô nhập liệu
+  // TextEditingControllers
   late TextEditingController nameController;
   late TextEditingController phoneController;
   late TextEditingController emailController;
   late TextEditingController genderController;
+  late TextEditingController addressController;
 
-  // Dùng GlobalKey để quản lý Form và validate (nếu cần)
+  // Form key
   final formKey = GlobalKey<FormState>();
+
+  // Storage
+  final _box = GetStorage();
+
+  // Keys lưu trữ
+  static const _kName = 'profile_name';
+  static const _kPhone = 'profile_phone';
+  static const _kEmail = 'profile_email';
+  static const _kGender = 'profile_gender';
+  static const _kAddress = 'profile_address';
 
   @override
   void onInit() {
     super.onInit();
-
-    // Khởi tạo các controller với dữ liệu người dùng hiện tại (giả lập)
-    nameController = TextEditingController(text: 'User 1');
-    phoneController = TextEditingController(text: '0123456789');
-    emailController = TextEditingController(text: 'user1@email.com');
-    genderController = TextEditingController(text: 'Nam');
+    // Đọc dữ liệu đã lưu (nếu có), nếu chưa có dùng giá trị mặc định một lần duy nhất
+    nameController    = TextEditingController(text: _box.read<String>(_kName)    ?? 'User 1');
+    phoneController   = TextEditingController(text: _box.read<String>(_kPhone)   ?? '0123456789');
+    emailController   = TextEditingController(text: _box.read<String>(_kEmail)   ?? 'user1@email.com');
+    genderController  = TextEditingController(text: _box.read<String>(_kGender)  ?? 'Nam');
+    addressController = TextEditingController(text: _box.read<String>(_kAddress) ?? 'Quận 12, Tân Chánh HIệp');
   }
 
-  /// Xử lý khi người dùng nhấn nút "Lưu thay đổi"
+  /// Lưu hồ sơ vào GetStorage rồi quay lại
   void saveProfile() {
-    // Trong ứng dụng thật, bạn sẽ lấy dữ liệu và gửi lên API để cập nhật
-    final name = nameController.text;
-    final phone = phoneController.text;
-    // ...
+    // Nếu có validate: if (!(formKey.currentState?.validate() ?? true)) return;
 
-    debugPrint('Đã lưu thông tin mới: $name, $phone');
+    // Lưu vào GetStorage như bạn đã làm
+    _box.write(_kName,    nameController.text.trim());
+    _box.write(_kPhone,   phoneController.text.trim());
+    _box.write(_kEmail,   emailController.text.trim());
+    _box.write(_kGender,  genderController.text.trim());
+    _box.write(_kAddress, addressController.text.trim());
 
-    // Sau khi lưu thành công, quay lại màn hình trước đó
+    // Đồng thời cập nhật ProfileService để UI các màn khác phản ứng tức thì
+    final profile = Get.find<ProfileService>();
+    profile.saveAll(
+      name: nameController.text,
+      phone: phoneController.text,
+      email: emailController.text,
+      gender: genderController.text,
+      address: addressController.text,
+    );
+
     Get.back();
     Get.snackbar(
       'Thành công',
       'Thông tin cá nhân của bạn đã được cập nhật.',
       snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 2),
     );
   }
 
-  /// Xử lý đăng xuất
   void logout() {
     Get.snackbar('Thông báo', 'Người dùng đã đăng xuất.');
   }
 
   @override
   void onClose() {
-    // Dọn dẹp các controller để tránh rò rỉ bộ nhớ
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
     genderController.dispose();
+    addressController.dispose();
     super.onClose();
   }
 }

@@ -27,6 +27,8 @@ import 'modules/reset_password/binding/reset_password_binding.dart';
 import 'modules/reset_password/view/reset_password_view.dart';
 import 'modules/splash/binding/splash_binding.dart';
 import 'modules/splash/view/splash_view.dart';
+import 'package:minishop/modules/order_information/view/order_information_view.dart';
+import 'package:minishop/modules/order_information/binding/order_information_binding.dart';
 
 class AppRoutes {
   static const home = '/home';
@@ -46,6 +48,7 @@ class AppRoutes {
   static const forgotPassword = '/forgot-password';
   static const otp = '/otp';
   static const resetPassword = '/reset-password';
+  static const orderInformation = '/order-information';
 }
 
 class AppPages {
@@ -148,6 +151,12 @@ class AppPages {
       name: AppRoutes.resetPassword,
       page: () => const ResetPasswordView(),
       binding: ResetPasswordBinding(),
+      transition: Transition.rightToLeftWithFade,
+    ),
+    GetPage(
+      name: AppRoutes.orderInformation,
+      page: () => const OrderInformationView(),
+      binding: OrderInformationBinding(),
       transition: Transition.rightToLeftWithFade,
     ),
   ];

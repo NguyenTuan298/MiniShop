@@ -3,8 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
+import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'package:minishop/utils/format.dart';
-import 'package:minishop/utils/theme.dart';
+import 'package:minishop/routes.dart';
 
 class OrderSuccessView extends StatelessWidget {
   const OrderSuccessView({super.key});
@@ -12,18 +13,20 @@ class OrderSuccessView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<OrderController>();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      // để theme quyết định nền
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeader(controller),
-              _buildConfirmationSection(controller),
+              _buildHeader(context, controller),
+              _buildConfirmationSection(context, controller),
               const SizedBox(height: 16),
               _buildSection(
-                child: _buildOrderSummary(controller),
+                context: context,
+                child: _buildOrderSummary(context, controller),
               ),
               const SizedBox(height: 16),
               Padding(
@@ -31,14 +34,14 @@ class OrderSuccessView extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _buildShippingInfo(controller)),
+                    Expanded(child: _buildShippingInfo(context, controller)),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildPaymentMethod(controller)),
+                    Expanded(child: _buildPaymentMethod(context, controller)),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-              _buildActionButtons(controller),
+              _buildActionButtons(context, controller),
               const SizedBox(height: 16),
             ],
           ),
@@ -47,9 +50,9 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-  // --- CÁC HÀM HELPER ĐỂ XÂY DỰNG GIAO DIỆN ---
-
-  Widget _buildHeader(OrderController controller) {
+  // --- HEADER ---
+  Widget _buildHeader(BuildContext context, OrderController controller) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Stack(
@@ -59,8 +62,12 @@ class OrderSuccessView extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              tooltip: 'Quay lại',
               onPressed: controller.goToShopping,
+              icon: const Icon(Icons.arrow_back),
+              color: theme.appBarTheme.iconTheme?.color ??
+                  theme.iconTheme.color ??
+                  theme.colorScheme.onSurface,
             ),
           ),
         ],
@@ -68,29 +75,37 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-  Widget _buildConfirmationSection(OrderController controller) {
+  // --- CONFIRMATION ---
+  Widget _buildConfirmationSection(BuildContext context, OrderController controller) {
+    final theme = Theme.of(context);
+    final subColor = theme.colorScheme.onSurface.withOpacity(0.7);
+
     return _buildSection(
+      context: context,
       child: Column(
         children: [
-          const Icon(Icons.check_circle, color: Colors.green, size: 60),
+          Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 60),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Xác nhận đơn hàng!',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Obx(() => Text(
-            'cảm ơn bạn đã mua hàng. Đơn hàng #${controller.completedOrderId.value} của bạn đã được đặt thành công',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[700]),
-          )),
+          Obx(
+                () => Text(
+              'Cảm ơn bạn đã mua hàng. Đơn hàng #${controller.completedOrderId.value} của bạn đã được đặt thành công',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(color: subColor),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  /// CẬP NHẬT: Thay đổi nút "Xem đơn hàng" thành "Liên hệ hỗ trợ"
-  Widget _buildActionButtons(OrderController controller) {
+  // --- ACTION BUTTONS ---
+  Widget _buildActionButtons(BuildContext context, OrderController controller) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -99,7 +114,8 @@ class OrderSuccessView extends StatelessWidget {
             child: OutlinedButton(
               onPressed: controller.goToShopping,
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppTheme.primaryColor),
+                side: BorderSide(color: theme.colorScheme.primary),
+                foregroundColor: theme.colorScheme.primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
@@ -109,11 +125,10 @@ class OrderSuccessView extends StatelessWidget {
           const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
-              // Sửa lại hành động và văn bản
               onPressed: controller.contactSupport,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
@@ -125,90 +140,151 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-  // --- CÁC WIDGET TÁI SỬ DỤNG ---
-
-  Widget _buildSection({required Widget child}) {
+  // --- REUSABLE SECTION WRAPPER ---
+  Widget _buildSection({required BuildContext context, required Widget child}) {
+    final theme = Theme.of(context);
+    final bg = theme.colorScheme.surfaceVariant.withOpacity(
+      theme.brightness == Brightness.dark ? 0.25 : 1.0,
+    );
     return Container(
       width: double.infinity,
-      color: Colors.grey[200],
+      color: bg,
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
       child: child,
     );
   }
 
-  Widget _buildOrderSummary(OrderController controller) {
+  // --- ORDER SUMMARY ---
+  Widget _buildOrderSummary(BuildContext context, OrderController controller) {
+    final theme = Theme.of(context);
+    final titleStyle = theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Tóm tắt đơn hàng', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Tóm tắt đơn hàng', style: titleStyle),
         const SizedBox(height: 12),
         ...controller.currentOrderItems.map((item) {
           final itemName = '${item.product.name} (x${item.quantity.value})';
           final itemTotal = item.product.price * item.quantity.value;
-          return _buildSummaryRow(itemName, AppFormatters.formatCurrency(itemTotal));
+          return _buildSummaryRow(context, itemName, AppFormatters.formatCurrency(itemTotal));
         }),
-        _buildSummaryRow('Vận chuyển', AppFormatters.formatCurrency(controller.currentShippingFee)),
-        const Divider(height: 20),
-        _buildSummaryRow('Tổng cộng', AppFormatters.formatCurrency(controller.currentTotal), isBold: true),
-      ],
-    );
-  }
-
-  Widget _buildShippingInfo(OrderController controller) {
-    return _buildInfoCard(
-      title: 'Thông tin giao hàng',
-      children: [
-        _buildInfoRow('Họ Tên:', controller.userName),
-        _buildInfoRow('Địa Chỉ:', controller.address),
-        _buildInfoRow('SĐT:', controller.phoneNumber),
-      ],
-    );
-  }
-
-  Widget _buildPaymentMethod(OrderController controller) {
-    return _buildInfoCard(
-      title: 'Phương thức thanh toán',
-      children: [
-        _buildInfoRow('Mbbank:', '0334043054'),
-        _buildInfoRow('', 'Phan Quoc Hung'),
-        const SizedBox(height: 8),
-        Text(
-          'hết hạn vào ngày ${controller.currentExpirationDate}',
-          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+        _buildSummaryRow(context, 'Vận chuyển', AppFormatters.formatCurrency(controller.currentShippingFee)),
+        Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
+        _buildSummaryRow(
+          context,
+          'Tổng cộng',
+          AppFormatters.formatCurrency(controller.currentTotal),
+          isBold: true,
         ),
       ],
     );
   }
 
-  Widget _buildSummaryRow(String title, String value, {bool isBold = false}) {
+  // --- SHIPPING / PAYMENT INFO ---
+  /// ĐÃ KHÓA CHỈNH SỬA: không có nút "Chỉnh sửa" nữa.
+  Widget _buildShippingInfo(BuildContext context, OrderController controller) {
+    final profile = Get.find<ProfileService>();
+    return _buildInfoCard(
+      context: context,
+      title: 'Thông tin giao hàng',
+      trailing: TextButton(
+        onPressed: () => Get.toNamed(AppRoutes.editProfile),
+        child: const Text('Hồ sơ'),
+      ),
+      children: [
+        Obx(() => _buildInfoRow(context, 'Họ Tên:', profile.name.value)),
+        Obx(() => _buildInfoRow(context, 'Địa Chỉ:', profile.address.value)),
+        Obx(() => _buildInfoRow(context, 'SĐT:', profile.phone.value)),
+      ],
+    );
+  }
+
+
+  Widget _buildPaymentMethod(BuildContext context, OrderController controller) {
+    final theme = Theme.of(context);
+    final sub = theme.colorScheme.onSurface.withOpacity(0.6);
+
+    return _buildInfoCard(
+      context: context,
+      title: 'Phương thức thanh toán',
+      children: [
+        _buildInfoRow(context, 'Mbbank:', '0334043054'),
+        _buildInfoRow(context, '', 'Phan Quoc Hung'),
+        const SizedBox(height: 8),
+        Text(
+          'Hết hạn vào ngày ${controller.currentExpirationDate}',
+          style: theme.textTheme.bodySmall?.copyWith(color: sub),
+        ),
+      ],
+    );
+  }
+
+  // --- SMALL HELPERS ---
+  Widget _buildSummaryRow(BuildContext context, String title, String value, {bool isBold = false}) {
+    final theme = Theme.of(context);
+    final baseColor = theme.colorScheme.onSurface;
+    final left = theme.textTheme.bodyMedium?.copyWith(
+      color: baseColor.withOpacity(0.8),
+    );
+    final right = theme.textTheme.bodyMedium?.copyWith(
+      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+      color: baseColor,
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: TextStyle(color: Colors.grey[700])),
-          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+          Expanded(child: Text(title, style: left, overflow: TextOverflow.ellipsis)),
+          const SizedBox(width: 12),
+          Text(value, style: right),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard({required String title, required List<Widget> children}) {
+  Widget _buildInfoCard({
+    required BuildContext context,
+    required String title,
+    required List<Widget> children,
+    Widget? trailing, // vẫn giữ để tái sử dụng, nhưng không dùng ở đây
+  }) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(12)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        ...children,
-      ]),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...children,
+        ],
+      ),
     );
   }
 
-  Widget _buildInfoRow(String title, String value) {
+  Widget _buildInfoRow(BuildContext context, String title, String value) {
+    final theme = Theme.of(context);
+    final sub = theme.colorScheme.onSurface.withOpacity(0.8);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Text('$title $value', style: TextStyle(color: Colors.grey[700])),
+      child: Text(
+        title.isEmpty ? value : '$title $value',
+        style: theme.textTheme.bodyMedium?.copyWith(color: sub),
+      ),
     );
   }
 }
