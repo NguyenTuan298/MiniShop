@@ -19,4 +19,6 @@ app.use('/api', productRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on porthttp://localhost:${port}`);
+  console.log(process.env.MYSQLHOST);
 });
+

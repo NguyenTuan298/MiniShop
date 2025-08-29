@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService extends GetxService {
   // final String _baseUrl = 'http://192.168.1.46:3000/api/auth'; // sử dụng IP này trên máy để chạy ứng dụng
-  final String _baseUrl = 'https://minishop-kto7.onrender.com/api/auth'; sang      
+  final String _baseUrl = 'https://minishop-kto7.onrender.com/api/auth';
 
 // Login
   Future<Map<String, dynamic>> login(String phoneEmail, String password) async {
