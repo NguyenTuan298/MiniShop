@@ -1,31 +1,42 @@
 const express = require('express');
 const router = express.Router();
-const { sql, poolPromise } = require('../config/db');  // Giả sử bạn có config/db.js như trước
+const pool = require('../config/db');
+const multer = require('multer');
+const path = require('path');
 
-// GET /api/products - Lấy danh sách sản phẩm theo category (optional)
+const storage = multer.diskStorage({
+  destination: './public/images/',
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
+
+// Route để tải ảnh lên
+router.post('/products/upload', upload.single('image'), async (req, res) => {
+  try {
+    const imageUrl = `/images/${req.file.filename}`;
+    res.status(200).json({ message: 'Tải ảnh thành công', imageUrl });
+  } catch (err) {
+    console.error('Upload error:', err);
+    res.status(500).json({ error: 'Tải ảnh thất bại' });
+  }
+});
+
+// GET /api/products
 router.get('/products', async (req, res) => {
   const { category } = req.query;
-  console.log('Query category:', category); // Log tham số
+  console.log('Query category:', category);
   try {
-    const pool = await poolPromise;
-    let query = 'SELECT * FROM Products';
-    const request = pool.request();
-
-    if (category) {
-      query += ' WHERE category = @category';
-      request.input('category', sql.NVarChar, category); // Thêm tham số đúng cách
-      console.log('SQL Query:', query); // Log query
-    }
-    query += ' ORDER BY created_at DESC';
-    
-    const result = await request.query(query);
-    console.log('Query Result:', result.recordset); // Log kết quả
-    if (result.recordset.length === 0 && category) {
+    const query = 'SELECT * FROM Products' + (category ? ' WHERE category = ?' : '');
+    const [result] = await pool.query(query, category ? [category] : []);
+    console.log('Query Result:', result);
+    if (result.length === 0 && category) {
       return res.status(404).json({ error: 'Không tìm thấy sản phẩm trong danh mục này' });
     }
-    res.status(200).json({ products: result.recordset, message: 'Lấy sản phẩm thành công' });
+    res.status(200).json({ products: result, message: 'Lấy sản phẩm thành công' });
   } catch (err) {
-    console.error('Get products error:', err); // Log lỗi chi tiết
+    console.error('Get products error:', err);
     res.status(500).json({ error: 'Lấy sản phẩm thất bại' });
   }
 });
