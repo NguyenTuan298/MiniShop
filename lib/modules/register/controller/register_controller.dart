@@ -27,7 +27,7 @@ class RegisterController extends GetxController {
 
     if (phone.isEmpty || name.isEmpty || email.isEmpty || password.isEmpty) {
       Get.snackbar("Lỗi", "Vui lòng nhập đầy đủ thông tin",
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
       return;
     }
     if (!GetUtils.isEmail(email)) {

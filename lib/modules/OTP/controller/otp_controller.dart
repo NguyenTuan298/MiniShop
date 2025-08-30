@@ -46,14 +46,16 @@ class OtpController extends GetxController {
           'Thành công',
           'Xác thực OTP thành công',
           backgroundColor: Colors.green,
+          snackPosition: SnackPosition.TOP,
           colorText: Colors.white,
         );
       }
     } catch (e) {
       Get.snackbar(
         'Lỗi',
-        'Xác thực OTP thất bại: ${e.toString()}',
+        'Xác thực OTP thất bại',
         backgroundColor: Colors.red,
+        snackPosition: SnackPosition.TOP,
         colorText: Colors.white,
       );
     } finally {

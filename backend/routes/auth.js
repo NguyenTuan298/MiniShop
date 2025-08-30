@@ -1,9 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/db'); // Sử dụng pool trực tiếp
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
 
 // Hàm tạo OTP mặc định (6 số 1)
 const generateOTP = () => '111111';
+
+// Middleware kiểm tra token
+router.get('/check-token', async (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ error: 'Token không được cung cấp' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const [user] = await pool.query(
+      'SELECT id FROM Users WHERE id = ?',
+      [decoded.id]
+    );
+    if (user.length === 0) {
+      return res.status(401).json({ error: 'Người dùng không tồn tại' });
+    }
+    res.status(200).json({ message: 'Token hợp lệ' });
+  } catch (err) {
+    console.error('Check token error:', err);
+    res.status(401).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
+  }
+});
 
 // LOGIN
 router.post('/login', async (req, res) => {
@@ -19,7 +44,8 @@ router.post('/login', async (req, res) => {
       [phoneEmail, phoneEmail, password]
     );
     if (result.length > 0) {
-      const token = 'dummy-token-' + Date.now(); // Token dummy, thay bằng JWT trong production
+      const userId = result[0].id;
+      const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '1h' }); // Token hết hạn sau 1 giờ
       res.status(200).json({ message: 'Đăng nhập thành công', token });
     } else {
       res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không đúng' });

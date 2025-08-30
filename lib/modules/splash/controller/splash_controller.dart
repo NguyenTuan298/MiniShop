@@ -9,8 +9,14 @@ class SplashController extends GetxController {
   void onReady() {
     super.onReady();
     Future.delayed(const Duration(seconds: 6), () async {
-      final isLoggedIn = await _authService.isLoggedIn();
-      Get.offAllNamed(isLoggedIn ? AppRoutes.dashboard : AppRoutes.login);
+      try {
+        final isLoggedIn = await _authService.isLoggedIn();
+        Get.offAllNamed(isLoggedIn ? AppRoutes.dashboard : AppRoutes.login);
+      } catch (e) {
+        // Xử lý lỗi (nếu có), chuyển về login mặc định
+        Get.offAllNamed(AppRoutes.login);
+        print('Splash error: $e');
+      }
     });
   }
 }

@@ -35,7 +35,7 @@ class LoginController extends GetxController {
         Get.offAllNamed('/dashboard'); // Chuyển đến dashboard sau khi đăng nhập thành công
         Get.snackbar('Thành công', 'Đăng nhập thành công', backgroundColor: Colors.green, colorText: Colors.white);
       } else {
-        Get.snackbar('Lỗi', 'Đăng nhập thất bại: ${response['error'] ?? 'Không xác định'}', backgroundColor: Colors.red, colorText: Colors.white);
+        Get.snackbar('Lỗi', 'Đăng nhập thất bại', backgroundColor: Colors.red, colorText: Colors.white);
       }
     } catch (e) {
       Get.snackbar('Lỗi', 'Đăng nhập thất bại: ${e.toString()}', backgroundColor: Colors.red, colorText: Colors.white);

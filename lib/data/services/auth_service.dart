@@ -22,16 +22,37 @@ class AuthService extends GetxService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
       return data;
-    }
-    else {
-      throw Exception('');
+    } else {
+      // throw Exception('Đăng nhập thất bại: ${response.body}');
+      return {
+        'success': false,
+        'message': 'Đăng nhập thất bại'
+      };
     }
   }
 
   // Kiểm tra trạng thái đăng nhập
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('auth_token');
+    final token = prefs.getString('auth_token');
+    if (token == null) return false;
+
+    // Kiểm tra token với backend
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/check-token'),
+        headers: {'Authorization': 'Bearer $token'},
+      ).timeout(Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        await logout(); // Xóa token nếu không hợp lệ
+        return false;
+      }
+    } catch (e) {
+      await logout(); // Xóa token nếu có lỗi kết nối
+      return false;
+    }
   }
 
   // Đăng xuất (xóa token)
