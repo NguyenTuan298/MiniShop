@@ -15,7 +15,7 @@ router.post('/login', async (req, res) => {
 
   try {
     const [result] = await pool.query(
-      'SELECT id FROM Users WHERE (email = ? OR phone = ?) AND password = ?',
+      'SELECT id FROM users WHERE (email = ? OR phone = ?) AND password = ?',
       [phoneEmail, phoneEmail, password]
     );
     if (result.length > 0) {
@@ -33,27 +33,27 @@ router.post('/login', async (req, res) => {
 // REGISTER
 router.post('/register', async (req, res) => {
   console.log('Request body:', req.body);
-  const { email, phone, password } = req.body || {};
+  const { email, phone, password, name } = req.body || {}; // Thêm name vào destructuring
 
   if (!email || !password) {
-    console.log('Validation failed:', { email, phone, password });
+    console.log('Validation failed:', { email, phone, password, name });
     return res.status(400).json({ error: 'Vui lòng nhập đầy đủ email và mật khẩu' });
   }
 
   try {
     // Kiểm tra email hoặc phone đã tồn tại
     const [existingUser] = await pool.query(
-      'SELECT id FROM Users WHERE email = ? OR phone = ?',
+      'SELECT id FROM users WHERE email = ? OR phone = ?',
       [email, phone || null]
     );
     if (existingUser.length > 0) {
       return res.status(400).json({ error: 'Email hoặc số điện thoại đã tồn tại' });
     }
 
-    // Thêm user mới
+    // Thêm user mới với cột name
     const [result] = await pool.query(
-      'INSERT INTO Users (email, phone, password, created_at) VALUES (?, ?, ?, NOW())',
-      [email, phone || null, password]
+      'INSERT INTO users (email, phone, password, name, created_at) VALUES (?, ?, ?, ?, NOW())',
+      [email, phone || null, password, name || null] // Thêm name vào query và giá trị mặc định null nếu không có
     );
     const userId = result.insertId;
 
@@ -74,7 +74,7 @@ router.post('/forgot-password', async (req, res) => {
 
   try {
     const [userResult] = await pool.query(
-      'SELECT id FROM Users WHERE email = ? OR phone = ?',
+      'SELECT id FROM users WHERE email = ? OR phone = ?',
       [phoneEmail, phoneEmail]
     );
     if (userResult.length === 0) {
@@ -86,7 +86,7 @@ router.post('/forgot-password', async (req, res) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Hết hạn sau 10 phút
 
     await pool.query(
-      'INSERT INTO OTPs (user_id, otp, expires_at) VALUES (?, ?, ?)',
+      'INSERT INTO otps (user_id, otp, expires_at) VALUES (?, ?, ?)',
       [userId, otp, expiresAt]
     );
 
@@ -109,7 +109,7 @@ router.post('/verify-otp', async (req, res) => {
 
   try {
     const [userResult] = await pool.query(
-      'SELECT id FROM Users WHERE email = ? OR phone = ?',
+      'SELECT id FROM users WHERE email = ? OR phone = ?',
       [phoneEmail, phoneEmail]
     );
     console.log('User query result:', userResult);
@@ -126,7 +126,7 @@ router.post('/verify-otp', async (req, res) => {
     console.log('Node.js time:', new Date().toISOString());
 
     const [otpResult] = await pool.query(
-      'SELECT * FROM OTPs WHERE user_id = ? AND otp = ? AND expires_at > NOW()',
+      'SELECT * FROM otps WHERE user_id = ? AND otp = ? AND expires_at > NOW()',
       [userId, otp]
     );
     console.log('OTP query result:', otpResult);
@@ -136,7 +136,7 @@ router.post('/verify-otp', async (req, res) => {
     }
 
     // Comment tạm thời để debug
-    // await pool.query('DELETE FROM OTPs WHERE user_id = ? AND otp = ?', [userId, otp]);
+    // await pool.query('DELETE FROM otps WHERE user_id = ? AND otp = ?', [userId, otp]);
 
     res.status(200).json({ message: 'OTP hợp lệ' });
   } catch (err) {
@@ -155,7 +155,7 @@ router.post('/reset-password', async (req, res) => {
 
   try {
     const [result] = await pool.query(
-      'UPDATE Users SET password = ? WHERE email = ? OR phone = ?',
+      'UPDATE users SET password = ? WHERE email = ? OR phone = ?',
       [newPassword, phoneEmail, phoneEmail]
     );
     if (result.affectedRows === 0) {
