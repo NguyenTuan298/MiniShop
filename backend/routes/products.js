@@ -28,7 +28,7 @@ router.get('/products', async (req, res) => {
   const { category } = req.query;
   console.log('Query category:', category);
   try {
-    const query = 'SELECT * FROM Products' + (category ? ' WHERE category = ?' : '');
+    const query = 'SELECT * FROM products' + (category ? ' WHERE category = ?' : '');
     const [result] = await pool.query(query, category ? [category] : []);
     console.log('Query Result:', result);
     if (result.length === 0 && category) {
