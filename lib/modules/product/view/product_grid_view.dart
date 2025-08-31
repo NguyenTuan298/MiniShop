@@ -11,8 +11,12 @@ class ProductGridView extends StatelessWidget {
     final controller = Get.find<ProductController>();
     final theme = Theme.of(context);
 
+    // 🔧 Đảm bảo controller nhận arguments mới (nếu reuse instance)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.refreshFromArgs();
+    });
+
     return Scaffold(
-      // KHÔNG set backgroundColor cứng -> theo theme
       body: SafeArea(
         child: Column(
           children: [
@@ -54,7 +58,7 @@ class ProductGridView extends StatelessWidget {
     );
   }
 
-  /// Header tuỳ chỉnh tôn trọng theme (icon/text tự đổi màu theo light/dark)
+  /// Header tuỳ chỉnh tôn trọng theme
   Widget _buildHeader(BuildContext context, ProductController controller) {
     final theme = Theme.of(context);
 
@@ -63,17 +67,13 @@ class ProductGridView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Logo
           Image.asset('assets/images/logo1.png', height: 35),
           const SizedBox(height: 8),
-
-          // Hàng chứa nút Back (trái) + Tiêu đề (giữa)
           SizedBox(
             height: 48,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Tiêu đề căn giữa
                 Obx(() => Text(
                   controller.categoryName.value,
                   textAlign: TextAlign.center,
@@ -81,7 +81,6 @@ class ProductGridView extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 )),
-                // Nút back căn trái
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(

@@ -98,7 +98,7 @@ class OrderController extends GetxController {
   /// Tự quyết định lấy từ giỏ hàng hay từ đơn hàng cũ (Get.arguments)
   void loadDataForCheckout() {
     if (Get.arguments is OrderModel) {
-      // Thanh toán lại đơn cũ
+      // Thanh toán lại đơn cũ / hoặc xem tóm tắt đơn cũ tại Checkout
       _payingForExistingOrder = Get.arguments as OrderModel;
       final order = _payingForExistingOrder!;
 
@@ -134,13 +134,61 @@ class OrderController extends GetxController {
   }
 
   //========================================================================
+  // HỖ TRỢ TRẠNG THÁI / QUY TẮC
+  //========================================================================
+
+  bool canPay(OrderModel order) => order.status != OrderStatus.paid;
+
+  //========================================================================
   // HÀNH ĐỘNG & ĐIỀU HƯỚNG
   //========================================================================
+
+  /// Thêm đơn hàng từ giỏ hiện tại vào lịch sử với trạng thái CHỜ THANH TOÁN
+  void addCurrentToOrderHistoryAsPending() {
+    // Nếu đang ở chế độ "thanh toán lại" 1 đơn cũ, không cho thêm mới
+    if (_payingForExistingOrder != null) {
+      Get.snackbar('Thông báo', 'Bạn đang thao tác với đơn hàng lịch sử, không thể thêm mới.');
+      return;
+    }
+
+    _prepareDataFromCart();
+    if (_currentOrderItems.isEmpty) {
+      Get.snackbar('Thông báo', 'Giỏ hàng của bạn đang trống.');
+      return;
+    }
+
+    final newId = (Random().nextInt(900) + 100).toString();
+
+    final newOrder = OrderModel(
+      id: newId,
+      date: DateTime.now(),
+      items: List<CartItem>.from(_currentOrderItems),
+      totalAmount: _currentTotal,
+      // Đổi lại giá trị này nếu enum của bạn khác 'pending'
+      status: OrderStatus.pending,
+    );
+
+    orderHistory.insert(0, newOrder);
+
+    // Tuỳ chọn: clear giỏ để tránh tạo trùng. Bỏ dòng dưới nếu muốn giữ lại giỏ.
+    cartController.cartItems.clear();
+
+    // Mở tab Lịch sử để thấy đơn vừa thêm
+    goToOrderHistory();
+
+    Get.snackbar('Thành công', 'Đã thêm đơn #$newId vào lịch sử. Bạn có thể thanh toán sau.');
+  }
 
   /// Hoàn tất đơn hàng (đã thanh toán)
   void completeOrder() {
     if (_payingForExistingOrder != null) {
-      // Thanh toán lại đơn hàng lịch sử
+      // Bảo vệ: nếu đơn đã paid thì không làm gì thêm
+      if (_payingForExistingOrder!.status == OrderStatus.paid) {
+        Get.snackbar('Thông báo', 'Đơn hàng #${_payingForExistingOrder!.id} đã được thanh toán trước đó.');
+        return;
+      }
+
+      // Thanh toán lại đơn hàng lịch sử (đổi trạng thái sang paid)
       final idx = orderHistory.indexWhere((o) => o.id == _payingForExistingOrder!.id);
       if (idx != -1) {
         orderHistory[idx].status = OrderStatus.paid;
@@ -174,6 +222,8 @@ class OrderController extends GetxController {
 
     orderHistory.insert(0, newOrder);
     Get.toNamed(AppRoutes.orderSuccess);
+
+    // Sau khi thanh toán đơn mới -> clear giỏ
     cartController.cartItems.clear();
   }
 

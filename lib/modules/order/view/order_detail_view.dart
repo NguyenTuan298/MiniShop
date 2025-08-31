@@ -39,8 +39,8 @@ class OrderDetailView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(context),
-                _buildSection(context: context, child: _buildOrderSummary(context, order)),
-                _buildItemListSection(context, controller, order),
+                _buildSection(context: context, child: _buildOrderSummary(context, order as OrderModel)),
+                _buildItemListSection(context, controller, order as OrderModel),
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),

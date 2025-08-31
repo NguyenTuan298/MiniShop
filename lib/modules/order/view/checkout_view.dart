@@ -6,6 +6,7 @@ import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/routes.dart';
 import 'package:minishop/modules/profile/service/profile_service.dart';
+import 'package:minishop/data/models/order.dart'; // thêm: để đọc trạng thái đơn khi đi từ lịch sử
 
 class CheckoutView extends StatelessWidget {
   const CheckoutView({super.key});
@@ -16,6 +17,11 @@ class CheckoutView extends StatelessWidget {
 
     // Nên đặt trong onInit của controller; tạm thời gọi 1 lần ở đây
     controller.loadDataForCheckout();
+
+    // Xác định ngữ cảnh: đang trả đơn cũ hay giỏ hàng hiện tại
+    final bool payingExisting = Get.arguments is OrderModel;
+    final OrderModel? passedOrder = payingExisting ? Get.arguments as OrderModel : null;
+    final bool isPaid = passedOrder?.status == OrderStatus.paid;
 
     return Scaffold(
       // Không set màu cứng -> theo theme
@@ -38,12 +44,12 @@ class CheckoutView extends StatelessWidget {
                   children: [
                     Expanded(child: _buildShippingInfo(context, controller)),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildPaymentMethod(context, controller)),
+                    Expanded(child: _buildPaymentMethod(context, controller, payingExisting, isPaid, passedOrder)),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-              _buildConfirmButton(context, controller),
+              _buildActionButtons(context, controller, payingExisting, isPaid),
               const SizedBox(height: 16),
             ],
           ),
@@ -171,10 +177,24 @@ class CheckoutView extends StatelessWidget {
     );
   }
 
-
-  Widget _buildPaymentMethod(BuildContext context, OrderController controller) {
+  Widget _buildPaymentMethod(
+      BuildContext context,
+      OrderController controller,
+      bool payingExisting,
+      bool isPaid,
+      OrderModel? order,
+      ) {
     final theme = Theme.of(context);
     final sub = theme.colorScheme.onSurface.withOpacity(0.6);
+
+    // Hiển thị thêm mã đơn & trạng thái nếu đang trả đơn cũ
+    final List<Widget> extras = [];
+    if (payingExisting && order != null) {
+      extras.add(const SizedBox(height: 8));
+      extras.add(_buildInfoRow(context, 'Mã đơn:', '#${order.id}'));
+      extras.add(_buildInfoRow(context, 'Trạng thái:', isPaid ? 'Đã thanh toán' : 'Chờ thanh toán'));
+    }
+
     return _buildInfoCard(
       context: context,
       title: 'Phương thức thanh toán',
@@ -186,26 +206,71 @@ class CheckoutView extends StatelessWidget {
           'hết hạn vào ngày ${controller.currentExpirationDate}',
           style: theme.textTheme.bodySmall?.copyWith(color: sub),
         ),
+        ...extras,
       ],
     );
   }
 
-  Widget _buildConfirmButton(BuildContext context, OrderController controller) {
+  // ===== Nút hành động =====
+  Widget _buildActionButtons(
+      BuildContext context,
+      OrderController controller,
+      bool payingExisting,
+      bool isPaid,
+      ) {
     final theme = Theme.of(context);
+
+    // Trường hợp đang trả đơn cũ: chỉ hiện 1 nút
+    if (payingExisting) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: isPaid ? null : controller.completeOrder,
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: theme.colorScheme.primary),
+              foregroundColor: theme.colorScheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: Text(isPaid ? 'Đã thanh toán' : 'Thanh toán'),
+          ),
+        ),
+      );
+    }
+
+    // Trường hợp giỏ hàng hiện tại: hiện 2 nút cạnh nhau
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: controller.completeOrder,
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: theme.colorScheme.primary),
-            foregroundColor: theme.colorScheme.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-            padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: controller.addCurrentToOrderHistoryAsPending,
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: theme.colorScheme.outline),
+                foregroundColor: theme.colorScheme.onSurface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text('Thêm vào đơn hàng'),
+            ),
           ),
-          child: const Text('Đã thanh toán'),
-        ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: controller.completeOrder,
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: theme.colorScheme.primary),
+                foregroundColor: theme.colorScheme.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text('Thanh toán'),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -229,7 +294,7 @@ class CheckoutView extends StatelessWidget {
     final theme = Theme.of(context);
     final base = theme.colorScheme.onSurface;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0), // ✅ đúng: EdgeInsets
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -245,6 +310,7 @@ class CheckoutView extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildInfoCard({
     required BuildContext context,
