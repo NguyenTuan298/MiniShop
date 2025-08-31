@@ -4,11 +4,11 @@ import 'package:minishop/widgets/welcome_banner.dart';
 import 'package:minishop/modules/dashboard/controller/dashboard_controller.dart';
 import 'package:minishop/modules/home/controller/home_controller.dart';
 
-// +++ thêm import để mở trang xem tất cả thể loại
-import 'package:minishop/modules/category/controller/category_controller.dart';
-import 'package:minishop/modules/category/view/category_list_view.dart';
+// Product & Cart
 import 'package:minishop/modules/product/view/product_grid_view.dart';
 import 'package:minishop/modules/product/controller/product_controller.dart';
+import 'package:minishop/modules/cart/controller/cart_controller.dart';
+import 'package:minishop/routes.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -31,10 +31,13 @@ class HomeView extends GetView<HomeController> {
     final dashboardController = Get.find<DashboardController>();
     final theme = Theme.of(context);
 
-    // Bảo đảm luôn có CategoryController cho Home
-    final categoryController = Get.isRegistered<CategoryController>()
-        ? Get.find<CategoryController>()
-        : Get.put(CategoryController());
+    // Bảo đảm luôn có ProductController & CartController cho Home
+    final productController = Get.isRegistered<ProductController>()
+        ? Get.find<ProductController>()
+        : Get.put(ProductController());
+    final cartController = Get.isRegistered<CartController>()
+        ? Get.find<CartController>()
+        : Get.put(CartController());
 
     return Obx(() {
       if (controller.isLoading.value) {
@@ -114,31 +117,49 @@ class HomeView extends GetView<HomeController> {
                     ],
                   ),
 
-                  // ====== MỤC MỚI: TẤT CẢ THỂ LOẠI (kéo ngang) ======
+                  // ====== THAY "TẤT CẢ THỂ LOẠI" -> "TẤT CẢ SẢN PHẨM" ======
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Tất cả thể loại', style: theme.textTheme.titleLarge),
+                      Text('Tất cả sản phẩm', style: theme.textTheme.titleLarge),
                       TextButton(
-                        onPressed: () => Get.to(() => const CategoryListView()),
+                        onPressed: () {
+                          // Mở ProductGridView: chỉ ảnh + tap => checkout
+                          Get.to(
+                                () => const ProductGridView(),
+                            arguments: {
+                              'imageOnly': true,
+                              'tapToCheckout': true,
+                            },
+                            binding: BindingsBuilder(() {
+                              if (!Get.isRegistered<ProductController>()) {
+                                Get.put(ProductController());
+                              }
+                              if (!Get.isRegistered<CartController>()) {
+                                Get.put(CartController());
+                              }
+                            }),
+                          );
+                        },
                         child: const Text('Xem tất cả'),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
 
+                  // Carousel sản phẩm ngang (ảnh + tên + giá). Tap => thêm vào giỏ & đi Checkout
                   SizedBox(
-                    height: 118, // đủ chỗ cho avatar + 2 dòng tên
+                    height: 180,
                     child: Obx(() {
-                      if (categoryController.isLoading.value) {
+                      if (productController.isLoading.value) {
                         return const Center(child: CircularProgressIndicator());
                       }
-                      final cats = categoryController.categoryList;
-                      if (cats.isEmpty) {
+                      final products = productController.productList;
+                      if (products.isEmpty) {
                         return Center(
                           child: Text(
-                            'Chưa có thể loại',
+                            'Chưa có sản phẩm',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurface.withOpacity(0.6),
                             ),
@@ -147,57 +168,57 @@ class HomeView extends GetView<HomeController> {
                       }
                       return ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        itemCount: cats.length,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        itemCount: products.length,
+                        padding: const EdgeInsets.only(right: 4),
                         separatorBuilder: (_, __) => const SizedBox(width: 12),
                         itemBuilder: (ctx, i) {
-                          final c = cats[i];
+                          final p = products[i];
                           return GestureDetector(
                             onTap: () {
-                              Get.to(
-                                    () => const ProductGridView(),
-                                arguments: {'categoryId': c.id, 'categoryName': c.name},
-                                binding: BindingsBuilder(() {
-                                  if (!Get.isRegistered<ProductController>()) {
-                                    Get.put(ProductController());
-                                  }
-                                }),
-                              );
+                              cartController.addToCart(p);
+                              Get.toNamed(AppRoutes.checkout);
                             },
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 72,
-                                  height: 72,
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.surfaceVariant.withOpacity(
-                                      theme.brightness == Brightness.dark ? 0.35 : 1.0,
+                            child: SizedBox(
+                              width: 130,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: AspectRatio(
+                                      aspectRatio: 1, // ô vuông
+                                      child: Image.asset(
+                                        p.imageUrl,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
-                                    shape: BoxShape.circle,
                                   ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Image.asset(c.imageUrl, fit: BoxFit.cover),
-                                ),
-                                const SizedBox(height: 6),
-                                SizedBox(
-                                  width: 88,
-                                  child: Text(
-                                    c.name,
-                                    maxLines: 2,
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    p.name,
+                                    maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: theme.textTheme.bodySmall,
+                                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    // Nếu có AppFormatters thì dùng; ở đây giữ đơn giản
+                                    // AppFormatters.formatCurrency(p.price),
+                                    '${p.price.toStringAsFixed(0)} đ',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },
                       );
                     }),
                   ),
-                  // ====== HẾT MỤC MỚI ======
+                  // ====== HẾT PHẦN SẢN PHẨM ======
                 ],
               ),
             ),
