@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const authRoutes = require('../routes/auth');
 const productRoutes = require('../routes/products');
+const path = require('path');
+
 
 const app = express();
 const port = 3000;
@@ -11,7 +13,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // Thêm để hỗ trợ form data (nếu cần)
 
 // Cấu hình phục vụ static files từ thư mục public
-app.use('/images', express.static('public/images'));
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api', productRoutes);

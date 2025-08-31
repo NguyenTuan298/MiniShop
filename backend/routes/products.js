@@ -7,7 +7,7 @@ const path = require('path');
 const storage = multer.diskStorage({
   destination: './public/images/',
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, file.originalname); // Sử dụng tên file gốc
   }
 });
 const upload = multer({ storage: storage });
@@ -15,7 +15,10 @@ const upload = multer({ storage: storage });
 // Route để tải ảnh lên
 router.post('/products/upload', upload.single('image'), async (req, res) => {
   try {
-    const imageUrl = `/images/${req.file.filename}`;
+    if (!req.file) {
+      return res.status(400).json({ error: 'Vui lòng chọn một file ảnh' });
+    }
+    const imageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.originalname}`;
     res.status(200).json({ message: 'Tải ảnh thành công', imageUrl });
   } catch (err) {
     console.error('Upload error:', err);
@@ -23,7 +26,7 @@ router.post('/products/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// GET /api/products
+
 router.get('/products', async (req, res) => {
   const { category } = req.query;
   console.log('Query category:', category);
@@ -41,81 +44,39 @@ router.get('/products', async (req, res) => {
   }
 });
 
-// GET /api/products/:id - Lấy chi tiết sản phẩm
-router.get('/products/:id', async (req, res) => {
+router.put('/products/:id/image', async (req, res) => {
   const { id } = req.params;
+  const { imageUrl } = req.body;
+
+  if (!imageUrl) {
+    return res.status(400).json({ error: 'Vui lòng cung cấp đường dẫn ảnh' });
+  }
+
   try {
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('id', sql.Int, id)
-      .query('SELECT * FROM Products WHERE id = @id');
-    if (result.recordset.length === 0) {
+    const [result] = await pool.query(
+      'UPDATE products SET image_url = ? WHERE id = ?',
+      [imageUrl, id]
+    );
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Sản phẩm không tồn tại' });
     }
-    res.status(200).json({ product: result.recordset[0], message: 'Lấy chi tiết sản phẩm thành công' });
+    res.status(200).json({ message: 'Cập nhật ảnh thành công' });
   } catch (err) {
-    console.error('Get product detail error:', err);
-    res.status(500).json({ error: 'Lấy chi tiết sản phẩm thất bại' });
+    console.error('Update image error:', err);
+    res.status(500).json({ error: 'Cập nhật ảnh thất bại' });
   }
 });
 
-// POST /api/products - Thêm sản phẩm mới (admin)
-router.post('/products', async (req, res) => {
-  const { name, category, description, price, image_url, stock } = req.body;
-  if (!name || !category || !price) {
-    return res.status(400).json({ error: 'Vui lòng nhập đầy đủ thông tin bắt buộc' });
-  }
-  try {
-    const pool = await poolPromise;
-    await pool.request()
-      .input('name', sql.NVarChar, name)
-      .input('category', sql.NVarChar, category)
-      .input('description', sql.NVarChar, description || null)
-      .input('price', sql.Decimal(10, 2), price)
-      .input('image_url', sql.NVarChar, image_url || null)
-      .input('stock', sql.Int, stock || 0)
-      .query('INSERT INTO Products (name, category, description, price, image_url, stock) VALUES (@name, @category, @description, @price, @image_url, @stock)');
-    res.status(201).json({ message: 'Thêm sản phẩm thành công' });
-  } catch (err) {
-    console.error('Add product error:', err);
-    res.status(500).json({ error: 'Thêm sản phẩm thất bại' });
-  }
-});
 
-// PUT /api/products/:id - Cập nhật sản phẩm
-router.put('/products/:id', async (req, res) => {
-  const { id } = req.params;
-  const { name, category, description, price, image_url, stock } = req.body;
-  try {
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('id', sql.Int, id)
-      .input('name', sql.NVarChar, name)
-      .input('category', sql.NVarChar, category)
-      .input('description', sql.NVarChar, description)
-      .input('price', sql.Decimal(10, 2), price)
-      .input('image_url', sql.NVarChar, image_url)
-      .input('stock', sql.Int, stock)
-      .query('UPDATE Products SET name = @name, category = @category, description = @description, price = @price, image_url = @image_url, stock = @stock WHERE id = @id');
-    if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ error: 'Sản phẩm không tồn tại' });
-    }
-    res.status(200).json({ message: 'Cập nhật sản phẩm thành công' });
-  } catch (err) {
-    console.error('Update product error:', err);
-    res.status(500).json({ error: 'Cập nhật sản phẩm thất bại' });
-  }
-});
-
-// DELETE /api/products/:id - Xóa sản phẩm
 router.delete('/products/:id', async (req, res) => {
   const { id } = req.params;
+
   try {
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('id', sql.Int, id)
-      .query('DELETE FROM Products WHERE id = @id');
-    if (result.rowsAffected[0] === 0) {
+    const [result] = await pool.query(
+      'DELETE FROM products WHERE id = ?',
+      [id]
+    );
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Sản phẩm không tồn tại' });
     }
     res.status(200).json({ message: 'Xóa sản phẩm thành công' });
