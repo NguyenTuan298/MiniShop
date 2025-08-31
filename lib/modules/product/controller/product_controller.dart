@@ -1,5 +1,4 @@
-// lib/controllers/product_controller.dart
-
+// lib/modules/product/controller/product_controller.dart
 import 'package:get/get.dart';
 import '../../../data/models/product.dart';
 
@@ -11,31 +10,42 @@ class ProductController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Lấy arguments được truyền từ màn hình trước
-    if (Get.arguments != null) {
+    // Nhận args từ màn trước (nếu có)
+    if (Get.arguments is Map && Get.arguments['categoryId'] != null) {
       final String categoryId = Get.arguments['categoryId'];
-      categoryName.value = Get.arguments['categoryName'];
+      categoryName.value = (Get.arguments['categoryName'] ?? '').toString();
       fetchProductsByCategory(categoryId);
+    } else {
+      // Không có args -> hiển thị tất cả sản phẩm
+      _fetchAllProducts();
     }
   }
 
-  /// Tải sản phẩm dựa trên ID của danh mục
-  void fetchProductsByCategory(String categoryId) async {
+  void _fetchAllProducts() async {
     try {
       isLoading(true);
-      await Future.delayed(const Duration(milliseconds: 500)); // Giả lập API call
-
-      // Đây là nơi bạn sẽ gọi API thật.
-      // Bây giờ chúng ta sẽ dùng dữ liệu giả lập (mock database).
-      final allProducts = _getMockProducts();
-      productList.value = allProducts.where((p) => p.categoryId == categoryId).toList();
-
+      await Future.delayed(const Duration(milliseconds: 300));
+      final all = _getMockProducts();
+      productList.value = all;
+      categoryName.value = 'Tất cả sản phẩm';
     } finally {
       isLoading(false);
     }
   }
 
-  // Cơ sở dữ liệu sản phẩm giả lập
+  /// Tải sản phẩm theo ID danh mục
+  void fetchProductsByCategory(String categoryId) async {
+    try {
+      isLoading(true);
+      await Future.delayed(const Duration(milliseconds: 500)); // Giả lập API
+      final allProducts = _getMockProducts();
+      productList.value = allProducts.where((p) => p.categoryId == categoryId).toList();
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  // Mock data
   List<Product> _getMockProducts() {
     return [
       // Thời trang (categoryId: '2')
@@ -47,7 +57,7 @@ class ProductController extends GetxController {
       // Điện tử (categoryId: '1')
       Product(id: '201', name: 'Chip xử lý', imageUrl: 'assets/images/dientu.png', price: 5000000, categoryId: '1'),
 
-      // Thêm các sản phẩm cho các danh mục khác ở đây...
+      // Bạn có thể bổ sung thêm sản phẩm cho các category khác...
     ];
   }
 }

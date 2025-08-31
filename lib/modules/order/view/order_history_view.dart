@@ -16,7 +16,6 @@ class OrderHistoryView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      // KHÔNG set backgroundColor cứng; để ThemeData quyết định
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +36,7 @@ class OrderHistoryView extends StatelessWidget {
                   itemCount: controller.orderHistory.length,
                   itemBuilder: (context, index) {
                     final order = controller.orderHistory[index];
-                    return _buildOrderCard(context, order);
+                    return _buildOrderCard(context, order as OrderModel);
                   },
                   separatorBuilder: (context, index) => const SizedBox(height: 16),
                 );
@@ -70,27 +69,70 @@ class OrderHistoryView extends StatelessWidget {
   Widget _buildOrderCard(BuildContext context, OrderModel order) {
     final theme = Theme.of(context);
     final onSurfaceSubtle = theme.colorScheme.onSurface.withOpacity(0.7);
+    final bool isPaid = order.status == OrderStatus.paid;
+
+    final String statusText = () {
+      switch (order.status) {
+        case OrderStatus.paid:
+          return 'Đã thanh toán';
+        case OrderStatus.pending:
+          return 'Chờ thanh toán';
+        default:
+          return order.status.name; // fallback tên enum
+      }
+    }();
+
+    final Color statusBg = isPaid
+        ? theme.colorScheme.secondaryContainer
+        : theme.colorScheme.primaryContainer;
+    final Color statusFg = isPaid
+        ? theme.colorScheme.onSecondaryContainer
+        : theme.colorScheme.onPrimaryContainer;
 
     return Card(
       elevation: 0,
-      color: theme.cardColor, // tự đổi theo light/dark
+      color: theme.cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header: mã đơn + chip trạng thái + ngày + tổng tiền
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Order #${order.id}',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary, // dùng màu nhấn theo theme
+                // Left: Order id + chip
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Order #${order.id}',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusBg,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: statusFg,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                // Right: date + total
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -107,22 +149,41 @@ class OrderHistoryView extends StatelessWidget {
                 ),
               ],
             ),
+
             const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: OutlinedButton(
-                onPressed: () {
-                  // Điều hướng đến trang chi tiết và truyền đối tượng 'order' đi
-                  Get.toNamed(AppRoutes.orderDetail, arguments: order);
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: theme.colorScheme.primary,
-                  side: BorderSide(color: theme.colorScheme.primary),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+
+            // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (!isPaid) ...[
+                  OutlinedButton(
+                    onPressed: () {
+                      // Mở Checkout với đơn này để thanh toán
+                      Get.toNamed(AppRoutes.checkout, arguments: order);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.colorScheme.primary,
+                      side: BorderSide(color: theme.colorScheme.primary),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    ),
+                    child: const Text('Thanh toán'),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                OutlinedButton(
+                  onPressed: () {
+                    Get.toNamed(AppRoutes.orderDetail, arguments: order);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: theme.colorScheme.primary,
+                    side: BorderSide(color: theme.colorScheme.primary),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  ),
+                  child: const Text('Xem chi tiết'),
                 ),
-                child: const Text('Xem chi tiết'),
-              ),
-            )
+              ],
+            ),
           ],
         ),
       ),
