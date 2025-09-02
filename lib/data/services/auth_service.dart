@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthService extends GetxService {
   // final String _baseUrl = 'http://192.168.1.46:3000/api/auth'; // sử dụng IP này trên máy để chạy ứng dụng
   final String _baseUrl = 'https://minishop-kto7.onrender.com/api/auth';
+  static const String baseUrl = 'https://minishop-kto7.onrender.com/api';
 
 // Login
   Future<Map<String, dynamic>> login(String phoneEmail, String password) async {
@@ -133,6 +134,18 @@ class AuthService extends GetxService {
     } catch (e) {
       Get.snackbar("Lỗi", "Kết nối đến server thất bại");
       return false;
+    }
+  }
+
+
+  Future<List<dynamic>> fetchProductsByCategory(String category) async {
+    final response = await http.get(Uri.parse('$baseUrl/products?category=$category'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['products'];
+    } else {
+      throw Exception('Failed to load products: ${response.statusCode}');
     }
   }
 }

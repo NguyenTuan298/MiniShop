@@ -1,5 +1,4 @@
-// lib/views/order/order_detail_view.dart
-
+// order_detail_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -7,9 +6,8 @@ import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/routes.dart';
 import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'package:minishop/utils/format.dart';
-
-import '../../../data/models/cart_item.dart';
-import '../../../data/models/order.dart';
+import 'package:minishop/data/models/cart_item.dart';
+import 'package:minishop/data/models/order.dart';
 
 class OrderDetailView extends StatelessWidget {
   const OrderDetailView({super.key});
@@ -18,11 +16,9 @@ class OrderDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<OrderController>();
 
-    // Tải dữ liệu cho màn hình này
     controller.loadSelectedOrderDetails();
 
     return Scaffold(
-      // để theme quyết định nền
       body: SafeArea(
         child: Obx(() {
           final order = controller.selectedOrder.value;
@@ -47,7 +43,7 @@ class OrderDetailView extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(child: _buildShippingInfo(context, controller)), // KHÓA CHỈNH SỬA Ở ĐÂY
+                      Expanded(child: _buildShippingInfo(context, controller)),
                       const SizedBox(width: 16),
                       Expanded(child: _buildPaymentMethod(context, controller)),
                     ],
@@ -64,7 +60,6 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 
-  // --- HEADER ---
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
@@ -174,7 +169,7 @@ class OrderDetailView extends StatelessWidget {
                 Text(item.product.name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 Text(
-                  '${item.quantity.value} × ${AppFormatters.formatCurrency(item.product.price)}',
+                  '${item.quantity.value} × ${AppFormatters.formatCurrency(item.product.price.toDouble())}', // Sửa ở đây
                   style: theme.textTheme.bodySmall?.copyWith(color: sub),
                 ),
               ],
@@ -185,7 +180,6 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 
-  /// ĐÃ KHÓA CHỈNH SỬA: không có nút "Chỉnh sửa" nữa.
   Widget _buildShippingInfo(BuildContext context, OrderController controller) {
     final profile = Get.find<ProfileService>();
     return _buildInfoCard(
@@ -202,7 +196,6 @@ class OrderDetailView extends StatelessWidget {
       ],
     );
   }
-
 
   Widget _buildPaymentMethod(BuildContext context, OrderController controller) {
     final theme = Theme.of(context);
@@ -245,7 +238,6 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 
-  // --- WIDGETS TIỆN ÍCH ---
   Widget _buildSection({required BuildContext context, required Widget child}) {
     final theme = Theme.of(context);
     final bg = theme.colorScheme.surfaceVariant.withOpacity(
@@ -288,7 +280,7 @@ class OrderDetailView extends StatelessWidget {
     required BuildContext context,
     required String title,
     required List<Widget> children,
-    Widget? trailing, // vẫn giữ cho tái sử dụng, nhưng không dùng ở đây
+    Widget? trailing,
   }) {
     final theme = Theme.of(context);
     return Container(
@@ -327,4 +319,3 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 }
-

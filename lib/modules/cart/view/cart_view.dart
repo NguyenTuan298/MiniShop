@@ -16,11 +16,28 @@ class CartView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      // KHÔNG set backgroundColor cứng -> theo theme
+      appBar: AppBar(
+        centerTitle: true, // Cho title ở giữa
+        title: Image.asset(
+          'assets/images/logo1.png',
+          height: 30, // Chiều cao logo
+          fit: BoxFit.contain,
+        ),
+        backgroundColor: Colors.white70,
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(theme),
+            SizedBox(height: 16),
+            Center(
+              child: Text(
+                "Giỏ hàng của bạn",
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
             Expanded(
               child: Obx(() {
                 if (cartController.cartItems.isEmpty) {
@@ -52,23 +69,6 @@ class CartView extends StatelessWidget {
             }),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: Column(
-        children: [
-          Image.asset('assets/images/logo1.png', height: 35),
-          const SizedBox(height: 16),
-          Text(
-            'Giỏ hàng của bạn',
-            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-        ],
       ),
     );
   }

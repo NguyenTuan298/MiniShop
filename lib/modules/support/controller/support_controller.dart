@@ -44,13 +44,13 @@ class SupportController extends GetxController {
   /// HÀM MỚI: Điều hướng về tab Trang chủ
   void goToHome() {
     Get.until((route) => Get.currentRoute == AppRoutes.dashboard);
-    Get.find<DashboardController>().changeTabIndex(0);
+    Get.find<DashboardController>().changeTab(0);
   }
 
   /// HÀM MỚI: Điều hướng về tab Đơn đặt hàng
   void goToOrders() {
     Get.until((route) => Get.currentRoute == AppRoutes.dashboard);
-    Get.find<DashboardController>().changeTabIndex(3);
+    Get.find<DashboardController>().changeTab(3);
   }
 
   @override

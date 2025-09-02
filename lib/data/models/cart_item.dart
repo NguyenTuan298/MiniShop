@@ -1,7 +1,7 @@
 // lib/models/cart_item.dart
 
 import 'package:get/get.dart';
-import 'package:minishop/data/models/product.dart';
+import 'package:minishop/data/models/product_model.dart';
 
 class CartItem {
   final Product product;

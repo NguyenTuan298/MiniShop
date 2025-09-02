@@ -16,11 +16,29 @@ class OrderHistoryView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true, // Cho title ở giữa
+        title: Image.asset(
+          'assets/images/logo1.png',
+          height: 30, // Chiều cao logo
+          fit: BoxFit.contain,
+        ),
+        backgroundColor: Colors.white70,
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(context),
+            SizedBox(height: 16),
+            Center(
+              child: Text(
+                "Thông tin đơn hàng",
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
             Expanded(
               child: Obx(() {
                 if (controller.orderHistory.isEmpty) {
@@ -44,24 +62,6 @@ class OrderHistoryView extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.asset('assets/images/logo1.png', height: 40),
-          const SizedBox(height: 16),
-          Text(
-            'My orders',
-            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ],
       ),
     );
   }

@@ -11,11 +11,18 @@ class ProfileView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      // Không set backgroundColor cứng -> để theme quyết định
+      appBar: AppBar(
+        centerTitle: true, // Cho title ở giữa
+        title: Image.asset(
+          'assets/images/logo1.png',
+          height: 30, // Chiều cao logo
+          fit: BoxFit.contain,
+        ),
+        backgroundColor: Colors.white70,
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(theme),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),

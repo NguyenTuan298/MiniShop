@@ -1,12 +1,10 @@
+// order_information_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order_information/controller/order_information_controller.dart';
 import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/routes.dart';
-
-// ✅ Thêm import ProfileService để đọc/ghi thông tin hồ sơ
-import 'package:minishop/modules/profile/service/profile_service.dart';
 
 class OrderInformationView extends GetView<OrderInformationController> {
   const OrderInformationView({super.key});
@@ -31,7 +29,7 @@ class OrderInformationView extends GetView<OrderInformationController> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _buildShippingEditor(context)), // <— chỉnh & lưu vào hồ sơ
+                    Expanded(child: _buildShippingEditor(context)),
                     const SizedBox(width: 16),
                     Expanded(child: _buildPaymentMethod(context)),
                   ],
@@ -107,19 +105,18 @@ class OrderInformationView extends GetView<OrderInformationController> {
           final qty = it.quantity.value;
           final name = '${it.product.name} (x$qty)';
           final total = it.product.price * qty;
-          return _row(context, name, AppFormatters.formatCurrency(total));
+          return _row(context, name, AppFormatters.formatCurrency(total.toDouble())); // Sửa ở đây
         }),
-        _row(context, 'Vận chuyển', AppFormatters.formatCurrency(controller.shippingFee)),
+        _row(context, 'Vận chuyển', AppFormatters.formatCurrency(controller.shippingFee.toDouble())), // Sửa ở đây
         Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
-        _row(context, 'Tổng cộng', AppFormatters.formatCurrency(controller.total), isBold: true),
+        _row(context, 'Tổng cộng', AppFormatters.formatCurrency(controller.total.toDouble()), isBold: true), // Sửa ở đây
       ],
     );
   }
 
-  // === SHIPPING EDITOR (lấy & lưu vào Hồ sơ) ===
   Widget _buildShippingEditor(BuildContext context) {
     final theme = Theme.of(context);
-    final profile = Get.find<ProfileService>(); // lấy dữ liệu hồ sơ đã lưu
+    final profile = Get.find<ProfileService>();
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -145,8 +142,6 @@ class OrderInformationView extends GetView<OrderInformationController> {
             ],
           ),
           const SizedBox(height: 8),
-
-          // Hiển thị nhãn:giá trị từ trái sang phải; Địa chỉ tối đa 3 dòng
           Obx(() => _labeledValue(context, 'Họ Tên', profile.name.value)),
           Obx(() => _labeledValue(context, 'Địa Chỉ', profile.address.value, maxLines: 3)),
           Obx(() => _labeledValue(context, 'SĐT', profile.phone.value)),
@@ -249,7 +244,6 @@ class OrderInformationView extends GetView<OrderInformationController> {
         children: [
           Expanded(
             child: OutlinedButton(
-              // Lưu + đi tiếp thanh toán
               onPressed: controller.proceedToCheckout,
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: theme.colorScheme.primary),

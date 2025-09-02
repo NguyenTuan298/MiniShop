@@ -11,7 +11,7 @@ class ProfileController extends GetxController {
     // Tìm DashboardController đã được khởi tạo
     final dashboardController = Get.find<DashboardController>();
     // Thay đổi index của tab sang "Đơn đặt hàng" (vị trí thứ 4, index = 3)
-    dashboardController.changeTabIndex(3);
+    dashboardController.changeTab(3);
   }
 
   /// Xử lý hành động chỉnh sửa thông tin (chức năng giả lập)

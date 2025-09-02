@@ -1,230 +1,228 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/widgets/welcome_banner.dart';
-import 'package:minishop/modules/dashboard/controller/dashboard_controller.dart';
-import 'package:minishop/modules/home/controller/home_controller.dart';
+import '../../cart/controller/cart_controller.dart';
+import '../controller/home_controller.dart';
 
-// Product & Cart
-import 'package:minishop/modules/product/view/product_grid_view.dart';
-import 'package:minishop/modules/product/controller/product_controller.dart';
-import 'package:minishop/modules/cart/controller/cart_controller.dart';
-import 'package:minishop/routes.dart';
-
-class HomeView extends GetView<HomeController> {
+class HomeView extends StatelessWidget {
   const HomeView({super.key});
-
-  Widget _buildCategoryButton(BuildContext context, {required String label, VoidCallback? onPressed}) {
-    return FilledButton(
-      onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-        foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-        shape: const StadiumBorder(),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      ),
-      child: Text(label),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    final dashboardController = Get.find<DashboardController>();
+    final HomeController controller = Get.find<HomeController>();
+    final CartController cartController = Get.find<CartController>();
     final theme = Theme.of(context);
 
-    // Bảo đảm luôn có ProductController & CartController cho Home
-    final productController = Get.isRegistered<ProductController>()
-        ? Get.find<ProductController>()
-        : Get.put(ProductController());
-    final cartController = Get.isRegistered<CartController>()
-        ? Get.find<CartController>()
-        : Get.put(CartController());
-
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      return SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/logo1.png',
+          height: 30,
+          fit: BoxFit.contain,
+        ),
+        backgroundColor: Colors.white70,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const WelcomeBanner(),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  Text('Tin nổi bật', style: theme.textTheme.titleLarge),
-                  const SizedBox(height: 16),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            child: Column(
-                              children: [
-                                if (controller.newsImageUrl.value.isNotEmpty)
-                                  Image.asset(controller.newsImageUrl.value),
-                                Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Text(
-                                    controller.newsDescription.value,
-                                    style: theme.textTheme.bodyMedium,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            child: Column(
-                              children: [
-                                if (controller.newsImageUrl.value.isNotEmpty)
-                                  Image.asset(controller.newsImageUrl.value),
-                                Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Text(
-                                    controller.newsDescription.value,
-                                    style: theme.textTheme.bodyMedium,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  Text('Danh mục nổi bật', style: theme.textTheme.titleLarge),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 12.0,
-                    runSpacing: 12.0,
-                    children: [
-                      _buildCategoryButton(context, label: 'Mua Lại', onPressed: () => dashboardController.changeTabIndex(2)),
-                      _buildCategoryButton(context, label: 'Xem Đơn', onPressed: () => dashboardController.changeTabIndex(3)),
-                      _buildCategoryButton(context, label: 'Hỗ trợ', onPressed: () => Get.toNamed('/support')),
-                      _buildCategoryButton(context, label: 'Hồ sơ', onPressed: () => dashboardController.changeTabIndex(4)),
-                    ],
-                  ),
-
-                  // ====== THAY "TẤT CẢ THỂ LOẠI" -> "TẤT CẢ SẢN PHẨM" ======
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Tất cả sản phẩm', style: theme.textTheme.titleLarge),
-                      TextButton(
-                        onPressed: () {
-                          // Mở ProductGridView: chỉ ảnh + tap => checkout
-                          Get.to(
-                                () => const ProductGridView(),
-                            arguments: {
-                              'imageOnly': true,
-                              'tapToCheckout': true,
-                            },
-                            binding: BindingsBuilder(() {
-                              if (!Get.isRegistered<ProductController>()) {
-                                Get.put(ProductController());
-                              }
-                              if (!Get.isRegistered<CartController>()) {
-                                Get.put(CartController());
-                              }
-                            }),
-                          );
-                        },
-                        child: const Text('Xem tất cả'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Carousel sản phẩm ngang (ảnh + tên + giá). Tap => thêm vào giỏ & đi Checkout
-                  SizedBox(
-                    height: 180,
-                    child: Obx(() {
-                      if (productController.isLoading.value) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      final products = productController.productList;
-                      if (products.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'Chưa có sản phẩm',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(0.6),
-                            ),
-                          ),
-                        );
-                      }
-                      return ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: products.length,
-                        padding: const EdgeInsets.only(right: 4),
-                        separatorBuilder: (_, __) => const SizedBox(width: 12),
-                        itemBuilder: (ctx, i) {
-                          final p = products[i];
-                          return GestureDetector(
-                            onTap: () {
-                              cartController.addToCart(p);
-                              Get.toNamed(AppRoutes.checkout);
-                            },
-                            child: SizedBox(
-                              width: 130,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: AspectRatio(
-                                      aspectRatio: 1, // ô vuông
-                                      child: Image.asset(
-                                        p.imageUrl,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    p.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    // Nếu có AppFormatters thì dùng; ở đây giữ đơn giản
-                                    // AppFormatters.formatCurrency(p.price),
-                                    '${p.price.toStringAsFixed(0)} đ',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+            // Tin nổi bật
+            Text(
+              'Tin nổi bật',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: theme.primaryColor,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Obx(() => SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: controller.newsList.map((news) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          children: [
+                            if (news['image']!.isNotEmpty)
+                              Image.asset(news['image']!),
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                news['description']!,
+                                style: theme.textTheme.bodyMedium,
                               ),
                             ),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                  // ====== HẾT PHẦN SẢN PHẨM ======
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            )),
+
+            const SizedBox(height: 16),
+
+            // Danh mục nổi bật
+            const Text(
+              'Danh mục nổi bật',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 100,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _buildCategoryItem(Icons.phone_android, 'Điện thoại'),
+                  _buildCategoryItem(Icons.computer, 'Laptop'),
+                  _buildCategoryItem(Icons.watch, 'Đồng hồ'),
+                  _buildCategoryItem(Icons.tv, 'Tivi'),
                 ],
               ),
             ),
+
+            const SizedBox(height: 16),
+
+            // Sản phẩm gợi ý
+            const Text(
+              'Sản phẩm gợi ý',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.7,
+              children: [
+                _buildProductCard(
+                  name: 'Điện thoại iPhone',
+                  image: 'assets/images/iphone.png',
+                  price: '20.000.000đ',
+                  cartController: cartController,
+                ),
+                _buildProductCard(
+                  name: 'Laptop Dell',
+                  image: 'assets/images/laptop_dell.png',
+                  price: '18.000.000đ',
+                  cartController: cartController,
+                ),
+                _buildProductCard(
+                  name: 'Đồng hồ Casio',
+                  image: 'assets/images/dongho.png',
+                  price: '2.000.000đ',
+                  cartController: cartController,
+                ),
+                _buildProductCard(
+                  name: 'Tivi Samsung',
+                  image: 'assets/images/tivisamsung.png',
+                  price: '15.000.000đ',
+                  cartController: cartController,
+                ),
+              ],
+            ),
           ],
         ),
-      );
-    });
+      ),
+    );
+  }
+
+  Widget _buildCategoryItem(IconData icon, String label) {
+    return Container(
+      width: 90,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 32, color: Colors.blue),
+          const SizedBox(height: 8),
+          Text(label, textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductCard({
+    required String name,
+    required String image,
+    required String price,
+    required CartController cartController,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(12)),
+              child: Image.asset(image,
+                  fit: BoxFit.cover, width: double.infinity),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(price, style: const TextStyle(color: Colors.red)),
+                    GestureDetector(
+                      onTap: () {
+                        // Tạm thời chỉ báo snackbar vì chưa có Product model
+                        Get.snackbar(
+                          'Thông báo',
+                          '$name đã được thêm vào giỏ hàng',
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: Colors.green.withOpacity(0.8),
+                          colorText: Colors.white,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.add,
+                            color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

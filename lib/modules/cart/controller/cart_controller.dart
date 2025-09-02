@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart'; // thêm để dùng Color & Theme
 
 import '../../../data/models/cart_item.dart';
-import '../../../data/models/product.dart';
+import '../../../data/models/product_model.dart';
 
 class CartController extends GetxController {
   var cartItems = <CartItem>[].obs;
@@ -18,9 +18,18 @@ class CartController extends GetxController {
     final index = cartItems.indexWhere((item) => item.product.id == product.id);
     if (index != -1) {
       cartItems[index].quantity.value++;
+      Get.snackbar(
+          'Cập nhật giỏ hàng',
+          'Đã tăng số lượng của ${product.name}.',
+      );
     } else {
       cartItems.add(CartItem(product: product, quantity: 1));
+      Get.snackbar(
+          'Đã thêm vào giỏ hàng',
+          '${product.name} đã được thêm vào giỏ hàng của bạn.',
+      );
     }
+
 
     // Snackbar theo theme (tự tối/sáng)
     final theme = Get.theme;

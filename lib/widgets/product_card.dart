@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minishop/data/models/product.dart'; // ✅ giữ 1 import duy nhất
+import 'package:minishop/data/models/product_model.dart'; // ✅ giữ 1 import duy nhất
 import 'package:minishop/modules/cart/controller/cart_controller.dart';
 import 'package:minishop/utils/format.dart';
 
@@ -50,7 +50,7 @@ class ProductCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      AppFormatters.formatCurrency(product.price),
+                      AppFormatters.formatCurrency(product.price.toDouble()), // Sửa ở đây: thêm .toDouble()
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.primary, // ✅ dùng ColorScheme
                         fontWeight: FontWeight.bold,

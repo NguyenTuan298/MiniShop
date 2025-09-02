@@ -42,7 +42,7 @@ class CartItemCard extends StatelessWidget {
                 Text(item.product.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text(
-                  AppFormatters.formatCurrency(item.product.price),
+                  AppFormatters.formatCurrency(item.product.price.toDouble()), // Sửa ở đây
                   style: const TextStyle(fontSize: 14, color: AppTheme.primaryColor),
                 ),
               ],

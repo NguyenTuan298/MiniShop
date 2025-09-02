@@ -230,13 +230,13 @@ class OrderController extends GetxController {
   /// Quay về Trang chủ (tab 0)
   void goToShopping() {
     Get.until((route) => Get.currentRoute == AppRoutes.dashboard);
-    Get.find<DashboardController>().changeTabIndex(0);
+    Get.find<DashboardController>().changeTab(0);
   }
 
   /// Mở tab Lịch sử đơn hàng (tab 3)
   void goToOrderHistory() {
     Get.until((route) => Get.currentRoute == AppRoutes.dashboard);
-    Get.find<DashboardController>().changeTabIndex(3);
+    Get.find<DashboardController>().changeTab(3);
   }
 
   /// Điều hướng tới màn hỗ trợ

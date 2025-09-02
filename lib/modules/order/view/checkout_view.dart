@@ -1,12 +1,11 @@
-// lib/views/order/checkout_view.dart
-
+// checkout_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/routes.dart';
 import 'package:minishop/modules/profile/service/profile_service.dart';
-import 'package:minishop/data/models/order.dart'; // thêm: để đọc trạng thái đơn khi đi từ lịch sử
+import 'package:minishop/data/models/order.dart';
 
 class CheckoutView extends StatelessWidget {
   const CheckoutView({super.key});
@@ -15,16 +14,13 @@ class CheckoutView extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<OrderController>();
 
-    // Nên đặt trong onInit của controller; tạm thời gọi 1 lần ở đây
     controller.loadDataForCheckout();
 
-    // Xác định ngữ cảnh: đang trả đơn cũ hay giỏ hàng hiện tại
     final bool payingExisting = Get.arguments is OrderModel;
     final OrderModel? passedOrder = payingExisting ? Get.arguments as OrderModel : null;
     final bool isPaid = passedOrder?.status == OrderStatus.paid;
 
     return Scaffold(
-      // Không set màu cứng -> theo theme
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -119,34 +115,30 @@ class CheckoutView extends StatelessWidget {
       children: [
         Text('Tóm tắt đơn hàng', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-
-        // items
         ...controller.currentOrderItems.map((item) {
           final qty = (item.quantity is RxInt)
               ? (item.quantity as RxInt).value
               : item.quantity as int;
           final itemName = '${item.product.name} (x$qty)';
           final itemTotal = item.product.price * qty;
-          return _buildSummaryRow(context, itemName, AppFormatters.formatCurrency(itemTotal));
+          return _buildSummaryRow(context, itemName, AppFormatters.formatCurrency(itemTotal.toDouble())); // Sửa ở đây
         }),
-
         Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
-
         _buildSummaryRow(
           context,
           'Tạm tính',
-          AppFormatters.formatCurrency(controller.currentSubtotal),
+          AppFormatters.formatCurrency(controller.currentSubtotal.toDouble()), // Sửa ở đây
         ),
         _buildSummaryRow(
           context,
           'Vận chuyển',
-          AppFormatters.formatCurrency(controller.currentShippingFee),
+          AppFormatters.formatCurrency(controller.currentShippingFee.toDouble()), // Sửa ở đây
         ),
         Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
         _buildSummaryRow(
           context,
           'Tổng cộng',
-          AppFormatters.formatCurrency(controller.currentTotal),
+          AppFormatters.formatCurrency(controller.currentTotal.toDouble()), // Sửa ở đây
           isBold: true,
         ),
       ],
@@ -158,7 +150,6 @@ class CheckoutView extends StatelessWidget {
     return _buildInfoCard(
       context: context,
       title: 'Thông tin giao hàng',
-      // Cho phép chỉnh sửa tại Checkout
       children: [
         Row(
           children: [
@@ -187,7 +178,6 @@ class CheckoutView extends StatelessWidget {
     final theme = Theme.of(context);
     final sub = theme.colorScheme.onSurface.withOpacity(0.6);
 
-    // Hiển thị thêm mã đơn & trạng thái nếu đang trả đơn cũ
     final List<Widget> extras = [];
     if (payingExisting && order != null) {
       extras.add(const SizedBox(height: 8));
@@ -211,7 +201,6 @@ class CheckoutView extends StatelessWidget {
     );
   }
 
-  // ===== Nút hành động =====
   Widget _buildActionButtons(
       BuildContext context,
       OrderController controller,
@@ -220,7 +209,6 @@ class CheckoutView extends StatelessWidget {
       ) {
     final theme = Theme.of(context);
 
-    // Trường hợp đang trả đơn cũ: chỉ hiện 1 nút
     if (payingExisting) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -240,7 +228,6 @@ class CheckoutView extends StatelessWidget {
       );
     }
 
-    // Trường hợp giỏ hàng hiện tại: hiện 2 nút cạnh nhau
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -275,8 +262,6 @@ class CheckoutView extends StatelessWidget {
     );
   }
 
-  // ---------------- Helpers dùng Theme ----------------
-
   Widget _buildSection({required BuildContext context, required Widget child}) {
     final theme = Theme.of(context);
     final bg = theme.colorScheme.surfaceVariant.withOpacity(
@@ -293,12 +278,16 @@ class CheckoutView extends StatelessWidget {
   Widget _buildSummaryRow(BuildContext context, String title, String value, {bool isBold = false}) {
     final theme = Theme.of(context);
     final base = theme.colorScheme.onSurface;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0), // ✅ đúng: EdgeInsets
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: theme.textTheme.bodyMedium?.copyWith(color: base.withOpacity(0.8))),
+          Text(
+            title,
+            style: theme.textTheme.bodyMedium?.copyWith(color: base.withOpacity(0.8)),
+          ),
           Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -311,12 +300,10 @@ class CheckoutView extends StatelessWidget {
     );
   }
 
-
   Widget _buildInfoCard({
     required BuildContext context,
     required String title,
     required List<Widget> children,
-    Widget? trailing, // << thêm
   }) {
     final theme = Theme.of(context);
     return Container(
@@ -328,13 +315,9 @@ class CheckoutView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-              ),
-              if (trailing != null) trailing,
-            ],
+          Text(
+            title,
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           ...children,

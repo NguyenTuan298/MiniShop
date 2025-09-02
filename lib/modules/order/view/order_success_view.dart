@@ -1,5 +1,4 @@
-// lib/views/order/order_success_view.dart
-
+// order_success_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
@@ -16,7 +15,6 @@ class OrderSuccessView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      // để theme quyết định nền
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -50,7 +48,6 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-  // --- HEADER ---
   Widget _buildHeader(BuildContext context, OrderController controller) {
     final theme = Theme.of(context);
     return Padding(
@@ -75,7 +72,6 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-  // --- CONFIRMATION ---
   Widget _buildConfirmationSection(BuildContext context, OrderController controller) {
     final theme = Theme.of(context);
     final subColor = theme.colorScheme.onSurface.withOpacity(0.7);
@@ -103,7 +99,6 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-  // --- ACTION BUTTONS ---
   Widget _buildActionButtons(BuildContext context, OrderController controller) {
     final theme = Theme.of(context);
     return Padding(
@@ -140,7 +135,6 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-  // --- REUSABLE SECTION WRAPPER ---
   Widget _buildSection({required BuildContext context, required Widget child}) {
     final theme = Theme.of(context);
     final bg = theme.colorScheme.surfaceVariant.withOpacity(
@@ -154,7 +148,6 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-  // --- ORDER SUMMARY ---
   Widget _buildOrderSummary(BuildContext context, OrderController controller) {
     final theme = Theme.of(context);
     final titleStyle = theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold);
@@ -167,22 +160,20 @@ class OrderSuccessView extends StatelessWidget {
         ...controller.currentOrderItems.map((item) {
           final itemName = '${item.product.name} (x${item.quantity.value})';
           final itemTotal = item.product.price * item.quantity.value;
-          return _buildSummaryRow(context, itemName, AppFormatters.formatCurrency(itemTotal));
+          return _buildSummaryRow(context, itemName, AppFormatters.formatCurrency(itemTotal.toDouble())); // Sửa ở đây
         }),
-        _buildSummaryRow(context, 'Vận chuyển', AppFormatters.formatCurrency(controller.currentShippingFee)),
+        _buildSummaryRow(context, 'Vận chuyển', AppFormatters.formatCurrency(controller.currentShippingFee.toDouble())), // Sửa ở đây
         Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
         _buildSummaryRow(
           context,
           'Tổng cộng',
-          AppFormatters.formatCurrency(controller.currentTotal),
+          AppFormatters.formatCurrency(controller.currentTotal.toDouble()), // Sửa ở đây
           isBold: true,
         ),
       ],
     );
   }
 
-  // --- SHIPPING / PAYMENT INFO ---
-  /// ĐÃ KHÓA CHỈNH SỬA: không có nút "Chỉnh sửa" nữa.
   Widget _buildShippingInfo(BuildContext context, OrderController controller) {
     final profile = Get.find<ProfileService>();
     return _buildInfoCard(
@@ -200,7 +191,6 @@ class OrderSuccessView extends StatelessWidget {
     );
   }
 
-
   Widget _buildPaymentMethod(BuildContext context, OrderController controller) {
     final theme = Theme.of(context);
     final sub = theme.colorScheme.onSurface.withOpacity(0.6);
@@ -213,33 +203,33 @@ class OrderSuccessView extends StatelessWidget {
         _buildInfoRow(context, '', 'Phan Quoc Hung'),
         const SizedBox(height: 8),
         Text(
-          'Hết hạn vào ngày ${controller.currentExpirationDate}',
+          'hết hạn vào ngày ${controller.currentExpirationDate}',
           style: theme.textTheme.bodySmall?.copyWith(color: sub),
         ),
       ],
     );
   }
 
-  // --- SMALL HELPERS ---
   Widget _buildSummaryRow(BuildContext context, String title, String value, {bool isBold = false}) {
     final theme = Theme.of(context);
-    final baseColor = theme.colorScheme.onSurface;
-    final left = theme.textTheme.bodyMedium?.copyWith(
-      color: baseColor.withOpacity(0.8),
-    );
-    final right = theme.textTheme.bodyMedium?.copyWith(
-      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-      color: baseColor,
-    );
+    final base = theme.colorScheme.onSurface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: Text(title, style: left, overflow: TextOverflow.ellipsis)),
-          const SizedBox(width: 12),
-          Text(value, style: right),
+          Text(
+            title,
+            style: theme.textTheme.bodyMedium?.copyWith(color: base.withOpacity(0.8)),
+          ),
+          Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: base,
+            ),
+          ),
         ],
       ),
     );
@@ -249,7 +239,7 @@ class OrderSuccessView extends StatelessWidget {
     required BuildContext context,
     required String title,
     required List<Widget> children,
-    Widget? trailing, // vẫn giữ để tái sử dụng, nhưng không dùng ở đây
+    Widget? trailing,
   }) {
     final theme = Theme.of(context);
     return Container(
@@ -264,7 +254,10 @@ class OrderSuccessView extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                ),
               ),
               if (trailing != null) trailing,
             ],

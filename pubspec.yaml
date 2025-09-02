@@ -14,6 +14,7 @@ dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
   shared_preferences: ^2.2.2
+  http: 1.2.0
 
   cupertino_icons: ^1.0.8
   get: ^4.6.6
@@ -48,7 +49,9 @@ flutter:
   - assets/images/doisong.png
   - assets/images/dochoi.png
   - assets/images/thethao.png
+  - assets/images/dulich.png
   - assets/images/thucpham.png
+  - assets/images/douong.png
   - assets/images/logo1.png
   - assets/images/aothunvang.png
   - assets/images/vayden.png
@@ -56,3 +59,7 @@ flutter:
   - assets/images/dohocsinh.png
   - assets/images/thanhtoan.png
   - assets/images/logo_google.png
+  - assets/images/tivisamsung.png
+  - assets/images/iphone.png
+  - assets/images/dongho.png
+  - assets/images/laptop_dell.png
