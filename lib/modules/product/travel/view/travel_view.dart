@@ -4,6 +4,8 @@ import 'package:get/Get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../../../cart/controller/cart_controller.dart';
 import '../controller/travel_controller.dart';
+import 'package:minishop/data/models/product_model.dart';
+
 
 class TravelView extends StatelessWidget {
   const TravelView({super.key});
@@ -106,6 +108,19 @@ class TravelView extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
+                        // ✅ Tạo Product từ dữ liệu item & thêm vào giỏ
+                        final product = Product(
+                          id: ((name + imageUrl).hashCode) & 0x7fffffff, // id ổn định từ name+image
+                          name: name,
+                          category: 'travel',                          // đúng category màn này
+                          description: '',
+                          price: price,
+                          imageUrl: imageUrl,
+                          stock: 999,
+                          createdAt: DateTime.now(),
+                        );
+                        cartController.addToCart(product);
+
                         Get.snackbar(
                           'Thông báo',
                           '$name đã được thêm vào giỏ hàng',

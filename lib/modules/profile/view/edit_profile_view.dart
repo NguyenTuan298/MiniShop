@@ -9,7 +9,8 @@ class EditProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(EditProfileController());
+    // final controller = Get.put(EditProfileController());
+    final controller = Get.find<EditProfileController>(); // ✅ dùng binding sẵn có
     final theme = Theme.of(context);
 
     return Scaffold(

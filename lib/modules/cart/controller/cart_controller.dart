@@ -1,65 +1,43 @@
-// lib/modules/cart/controller/cart_controller.dart
+// D:\MiniShop\lib\modules\cart\controller\cart_controller.dart
 import 'package:get/get.dart';
-import 'package:flutter/material.dart'; // thêm để dùng Color & Theme
-
-import '../../../data/models/cart_item.dart';
-import '../../../data/models/product_model.dart';
+import 'package:minishop/data/models/product_model.dart';
+import 'package:minishop/data/models/cart_item.dart';
 
 class CartController extends GetxController {
-  var cartItems = <CartItem>[].obs;
-  final double shippingFee = 5000.0;
-
-  double get subtotal =>
-      cartItems.fold(0, (sum, item) => sum + (item.product.price * item.quantity.value));
-
-  double get total => subtotal + shippingFee;
+  final cartItems = <CartItem>[].obs;
 
   void addToCart(Product product) {
-    final index = cartItems.indexWhere((item) => item.product.id == product.id);
-    if (index != -1) {
-      cartItems[index].quantity.value++;
-      Get.snackbar(
-          'Cập nhật giỏ hàng',
-          'Đã tăng số lượng của ${product.name}.',
-      );
+    final idx = cartItems.indexWhere((e) => e.product.id == product.id);
+    if (idx >= 0) {
+      cartItems[idx].quantity.value++;
     } else {
+      // 👇 chỉ đổi .obs -> số nguyên 1
       cartItems.add(CartItem(product: product, quantity: 1));
-      Get.snackbar(
-          'Đã thêm vào giỏ hàng',
-          '${product.name} đã được thêm vào giỏ hàng của bạn.',
-      );
     }
-
-
-    // Snackbar theo theme (tự tối/sáng)
-    final theme = Get.theme;
-    final bg = theme.colorScheme.surface.withOpacity(
-      theme.brightness == Brightness.dark ? 0.98 : 1.0,
-    );
-    final fg = theme.colorScheme.onSurface;
-
-    Get.snackbar(
-      'Đã thêm vào giỏ hàng',
-      '${product.name} đã được thêm vào giỏ hàng của bạn.',
-      snackPosition: SnackPosition.TOP,
-      duration: const Duration(seconds: 2),
-      backgroundColor: bg,
-      colorText: fg,
-      margin: const EdgeInsets.all(12),
-      borderRadius: 12,
-      snackStyle: SnackStyle.FLOATING,
-    );
   }
 
-  void incrementItem(CartItem item) => item.quantity.value++;
+  void incrementItem(CartItem item) {
+    item.quantity.value++;
+    cartItems.refresh();
+  }
 
   void decrementItem(CartItem item) {
     if (item.quantity.value > 1) {
       item.quantity.value--;
+      cartItems.refresh();
     } else {
       removeFromCart(item);
     }
   }
 
-  void removeFromCart(CartItem item) => cartItems.remove(item);
+  void removeFromCart(CartItem item) {
+    cartItems.removeWhere((e) => e.product.id == item.product.id);
+  }
+
+  double get subtotal =>
+      cartItems.fold(0.0, (sum, it) => sum + (it.product.price * it.quantity.value));
+
+  double get shippingFee => cartItems.isEmpty ? 0.0 : 15000.0;
+
+  double get total => subtotal + shippingFee;
 }

@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 
 import '../../../cart/controller/cart_controller.dart';
 import '../controller/fashion_controller.dart';
+import 'package:minishop/data/models/product_model.dart'; // NEW
+
 class FashionView extends GetView<FashionView> {
   const FashionView({super.key});
 
@@ -103,6 +105,19 @@ class FashionView extends GetView<FashionView> {
                     ),
                     GestureDetector(
                       onTap: () {
+                        // ✅ Tạo Product từ dữ liệu item & thêm vào giỏ
+                        final product = Product(
+                          id: ((name + imageUrl).hashCode) & 0x7fffffff, // id ổn định từ name+image
+                          name: name,
+                          category: 'fashion',                          // đúng category màn này
+                          description: '',
+                          price: price,
+                          imageUrl: imageUrl,
+                          stock: 999,
+                          createdAt: DateTime.now(),
+                        );
+                        cartController.addToCart(product);
+
                         Get.snackbar(
                           'Thông báo',
                           '$name đã được thêm vào giỏ hàng',

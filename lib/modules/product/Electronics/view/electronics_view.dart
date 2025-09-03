@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../cart/controller/cart_controller.dart';
 import '../controller/electronics_controller.dart';
+import 'package:minishop/data/models/product_model.dart'; // NEW
 
 class ElectronicsView extends StatelessWidget {
   const ElectronicsView({super.key});
@@ -104,7 +105,19 @@ class ElectronicsView extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // Thêm sản phẩm vào giỏ hàng (cần triển khai logic thực tế trong CartController)
+                        // ✅ Tạo Product từ dữ liệu item & thêm vào giỏ
+                        final product = Product(
+                          id: ((name + imageUrl).hashCode) & 0x7fffffff, // id ổn định từ name+image
+                          name: name,
+                          category: 'electronics',                          // đúng category màn này
+                          description: '',
+                          price: price,
+                          imageUrl: imageUrl,
+                          stock: 999,
+                          createdAt: DateTime.now(),
+                        );
+                        cartController.addToCart(product);
+
                         Get.snackbar(
                           'Thông báo',
                           '$name đã được thêm vào giỏ hàng',

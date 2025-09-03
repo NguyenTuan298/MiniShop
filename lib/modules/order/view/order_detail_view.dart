@@ -144,6 +144,29 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 
+  Widget _buildImage(String url) {
+    final isNetwork = url.startsWith('http://') || url.startsWith('https://');
+    return isNetwork
+        ? Image.network(
+      url,
+      width: 60,
+      height: 60,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const SizedBox(
+        width: 60, height: 60, child: Icon(Icons.broken_image),
+      ),
+    )
+        : Image.asset(
+      url,
+      width: 60,
+      height: 60,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const SizedBox(
+        width: 60, height: 60, child: Icon(Icons.broken_image),
+      ),
+    );
+  }
+
   Widget _buildProductRow(BuildContext context, CartItem item) {
     final theme = Theme.of(context);
     final sub = theme.colorScheme.onSurface.withOpacity(0.7);
@@ -151,26 +174,34 @@ class OrderDetailView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              item.product.imageUrl,
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-            ),
+            child: _buildImage(item.product.imageUrl), // ✅ tự nhận asset/network
           ),
           const SizedBox(width: 12),
+          // Phần chữ phải Expanded để không tràn ngang
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.product.name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
+                // Tên sản phẩm — giới hạn dòng để tránh overflow
                 Text(
-                  '${item.quantity.value} × ${AppFormatters.formatCurrency(item.product.price.toDouble())}', // Sửa ở đây
+                  item.product.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Số lượng × giá
+                Text(
+                  '${item.quantity.value} × ${AppFormatters.formatCurrency(item.product.price)}',
                   style: theme.textTheme.bodySmall?.copyWith(color: sub),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

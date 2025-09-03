@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../cart/controller/cart_controller.dart';
 import '../controller/life_utilities_controller.dart';
+import 'package:minishop/data/models/product_model.dart';
 
 class LifeUtilitiesView extends GetView<LifeUtilitiesView> {
   const LifeUtilitiesView({super.key});
@@ -104,6 +105,19 @@ class LifeUtilitiesView extends GetView<LifeUtilitiesView> {
                     ),
                     GestureDetector(
                       onTap: () {
+                        // ✅ Tạo Product từ dữ liệu item & thêm vào giỏ
+                        final product = Product(
+                          id: ((name + imageUrl).hashCode) & 0x7fffffff, // id ổn định từ name+image
+                          name: name,
+                          category: 'life_utilities',                          // đúng category màn này
+                          description: '',
+                          price: price,
+                          imageUrl: imageUrl,
+                          stock: 999,
+                          createdAt: DateTime.now(),
+                        );
+                        cartController.addToCart(product);
+
                         Get.snackbar(
                           'Thông báo',
                           '$name đã được thêm vào giỏ hàng',

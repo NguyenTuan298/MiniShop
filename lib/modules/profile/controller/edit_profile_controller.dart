@@ -6,20 +6,15 @@ import 'package:get_storage/get_storage.dart';
 import 'package:minishop/modules/profile/service/profile_service.dart';
 
 class EditProfileController extends GetxController {
-  // TextEditingControllers
   late TextEditingController nameController;
   late TextEditingController phoneController;
   late TextEditingController emailController;
   late TextEditingController genderController;
   late TextEditingController addressController;
 
-  // Form key
   final formKey = GlobalKey<FormState>();
-
-  // Storage
   final _box = GetStorage();
 
-  // Keys lưu trữ
   static const _kName = 'profile_name';
   static const _kPhone = 'profile_phone';
   static const _kEmail = 'profile_email';
@@ -29,26 +24,36 @@ class EditProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Đọc dữ liệu đã lưu (nếu có), nếu chưa có dùng giá trị mặc định một lần duy nhất
+
+    // 1) Khởi tạo theo GetStorage (fallback an toàn)
     nameController    = TextEditingController(text: _box.read<String>(_kName)    ?? 'User 1');
     phoneController   = TextEditingController(text: _box.read<String>(_kPhone)   ?? '0123456789');
     emailController   = TextEditingController(text: _box.read<String>(_kEmail)   ?? 'user1@email.com');
     genderController  = TextEditingController(text: _box.read<String>(_kGender)  ?? 'Nam');
     addressController = TextEditingController(text: _box.read<String>(_kAddress) ?? 'Quận 12, Tân Chánh HIệp');
+
+    // 2) 👉 Ghi đè bằng snapshot MỚI NHẤT từ ProfileService (đã được AuthService cập nhật sau đăng ký/đăng nhập)
+    _hydrateFromProfile();
   }
 
-  /// Lưu hồ sơ vào GetStorage rồi quay lại
-  void saveProfile() {
-    // Nếu có validate: if (!(formKey.currentState?.validate() ?? true)) return;
+  void _hydrateFromProfile() {
+    if (!Get.isRegistered<ProfileService>()) return;
+    final p = Get.find<ProfileService>();
 
-    // Lưu vào GetStorage như bạn đã làm
+    nameController.text    = p.name.value;
+    phoneController.text   = p.phone.value;
+    emailController.text   = p.email.value;
+    genderController.text  = p.gender.value;
+    addressController.text = p.address.value;
+  }
+
+  void saveProfile() {
     _box.write(_kName,    nameController.text.trim());
     _box.write(_kPhone,   phoneController.text.trim());
     _box.write(_kEmail,   emailController.text.trim());
     _box.write(_kGender,  genderController.text.trim());
     _box.write(_kAddress, addressController.text.trim());
 
-    // Đồng thời cập nhật ProfileService để UI các màn khác phản ứng tức thì
     final profile = Get.find<ProfileService>();
     profile.saveAll(
       name: nameController.text,

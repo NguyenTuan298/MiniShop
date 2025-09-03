@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../cart/controller/cart_controller.dart';
 import '../controller/beverage_controller.dart';
+import 'package:minishop/data/models/product_model.dart'; // NEW
 
 class BeverageView extends StatelessWidget {
   const BeverageView({super.key});
@@ -106,6 +107,19 @@ class BeverageView extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
+                        // ✅ Tạo Product từ dữ liệu item & thêm vào giỏ
+                        final product = Product(
+                          id: ((name + imageUrl).hashCode) & 0x7fffffff, // id ổn định từ name+image
+                          name: name,
+                          category: 'beverage',                          // đúng category màn này
+                          description: '',
+                          price: price,
+                          imageUrl: imageUrl,
+                          stock: 999,
+                          createdAt: DateTime.now(),
+                        );
+                        cartController.addToCart(product);
+
                         Get.snackbar(
                           'Thông báo',
                           '$name đã được thêm vào giỏ hàng',

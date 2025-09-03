@@ -5,11 +5,13 @@ import 'package:minishop/routes.dart';
 import 'package:minishop/utils/theme.dart';
 import 'package:minishop/data/services/auth_service.dart';
 import 'package:minishop/modules/profile/service/profile_service.dart';
+import 'package:minishop/modules/cart/controller/cart_controller.dart'; // ✅ thêm
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();// init storage trước khi runApp
   Get.put(ProfileService(), permanent: true);
+  Get.put(CartController(), permanent: true);
   runApp(const MyApp());
 }
 
