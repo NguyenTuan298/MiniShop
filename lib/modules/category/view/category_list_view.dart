@@ -8,7 +8,7 @@ class CategoryListView extends GetView<CategoryController> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> categories = ['Điện tử', 'Thời trang', 'Mỹ phẩm - Làm đẹp', 'Đồ gia dụng', 'Đời sống - Tiện ích', 'Đồ chơi - Giải trí', 'Thể thao', 'Thực phẩm','Du lịch','Đồ uống'];
+    List<String> categories = ['Điện tử', 'Thời trang', 'Mỹ phẩm - Làm đẹp', 'Đồ gia dụng', 'Đời sống - Tiện ích', 'Đồ chơi - Giải trí', 'Thể thao','Du lịch','Thực phẩm','Đồ uống'];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Danh mục sản phẩm',style: TextStyle(
