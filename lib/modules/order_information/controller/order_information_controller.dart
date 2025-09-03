@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/routes.dart';
-import '../../../data/models/cart_item.dart';
+import 'package:minishop/data/models/cart_item.dart';
 
 class OrderInformationController extends GetxController {
   final OrderController order = Get.find<OrderController>();

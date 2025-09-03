@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/routes.dart';
-import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'package:minishop/data/models/order.dart';
 
 class CheckoutView extends StatelessWidget {
@@ -146,7 +145,6 @@ class CheckoutView extends StatelessWidget {
   }
 
   Widget _buildShippingInfo(BuildContext context, OrderController controller) {
-    final profile = Get.find<ProfileService>();
     return _buildInfoCard(
       context: context,
       title: 'Thông tin giao hàng',
@@ -155,15 +153,15 @@ class CheckoutView extends StatelessWidget {
           children: [
             Expanded(child: _buildInfoRow(context, 'Họ Tên:', '')),
             TextButton(
-              onPressed: () => Get.toNamed(AppRoutes.orderInformation),
+              onPressed: () => Get.toNamed(AppRoutes.editProfile),
               child: const Text('Chỉnh sửa'),
             ),
           ],
         ),
         const SizedBox(height: 4),
-        Obx(() => _buildInfoRow(context, '', profile.name.value)),
-        Obx(() => _buildInfoRow(context, 'Địa Chỉ:', profile.address.value)),
-        Obx(() => _buildInfoRow(context, 'SĐT:', profile.phone.value)),
+        Obx(() => _buildInfoRow(context, '', controller.userName)),
+        Obx(() => _buildInfoRow(context, 'Địa Chỉ:', controller.address)),
+        Obx(() => _buildInfoRow(context, 'SĐT:', controller.phoneNumber)),
       ],
     );
   }

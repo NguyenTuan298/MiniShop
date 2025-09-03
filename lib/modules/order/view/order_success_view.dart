@@ -1,8 +1,7 @@
-// order_success_view.dart
+// lib/modules/order/view/order_success_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
-import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/routes.dart';
 
@@ -158,24 +157,33 @@ class OrderSuccessView extends StatelessWidget {
         Text('Tóm tắt đơn hàng', style: titleStyle),
         const SizedBox(height: 12),
         ...controller.currentOrderItems.map((item) {
-          final itemName = '${item.product.name} (x${item.quantity.value})';
-          final itemTotal = item.product.price * item.quantity.value;
-          return _buildSummaryRow(context, itemName, AppFormatters.formatCurrency(itemTotal.toDouble())); // Sửa ở đây
+          final qty = item.quantity.value;
+          final itemName = '${item.product.name} (x$qty)';
+          final itemTotal = item.product.price * qty;
+          return _buildSummaryRow(
+            context,
+            itemName,
+            AppFormatters.formatCurrency(itemTotal.toDouble()),
+          );
         }),
-        _buildSummaryRow(context, 'Vận chuyển', AppFormatters.formatCurrency(controller.currentShippingFee.toDouble())), // Sửa ở đây
+        _buildSummaryRow(
+          context,
+          'Vận chuyển',
+          AppFormatters.formatCurrency(controller.currentShippingFee.toDouble()),
+        ),
         Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
         _buildSummaryRow(
           context,
           'Tổng cộng',
-          AppFormatters.formatCurrency(controller.currentTotal.toDouble()), // Sửa ở đây
+          AppFormatters.formatCurrency(controller.currentTotal.toDouble()),
           isBold: true,
         ),
       ],
     );
   }
 
+  // ✅ Dùng thông tin từ OrderController, không dùng ProfileService nữa
   Widget _buildShippingInfo(BuildContext context, OrderController controller) {
-    final profile = Get.find<ProfileService>();
     return _buildInfoCard(
       context: context,
       title: 'Thông tin giao hàng',
@@ -184,9 +192,9 @@ class OrderSuccessView extends StatelessWidget {
         child: const Text('Hồ sơ'),
       ),
       children: [
-        Obx(() => _buildInfoRow(context, 'Họ Tên:', profile.name.value)),
-        Obx(() => _buildInfoRow(context, 'Địa Chỉ:', profile.address.value)),
-        Obx(() => _buildInfoRow(context, 'SĐT:', profile.phone.value)),
+        _buildInfoRow(context, 'Họ Tên:', controller.userName.isEmpty ? '...' : controller.userName),
+        _buildInfoRow(context, 'Địa Chỉ:', controller.address.isEmpty ? '...' : controller.address),
+        _buildInfoRow(context, 'SĐT:', controller.phoneNumber.isEmpty ? '...' : controller.phoneNumber),
       ],
     );
   }

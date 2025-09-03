@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/profile/controller/settings_controller.dart';
+import 'package:minishop/modules/profile/controller/profile_controller.dart' show AvatarCore;
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -20,7 +22,7 @@ class SettingsView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
                 child: Column(
                   children: [
-                    _buildAvatarSection(theme),
+                    _buildAvatarSection(theme, controller),
                     const SizedBox(height: 12),
                     Divider(
                       height: 40,
@@ -28,7 +30,6 @@ class SettingsView extends StatelessWidget {
                       color: theme.dividerColor.withOpacity(0.4),
                     ),
                     _buildThemeSwitcher(theme, controller),
-
                     _buildMenuItem(
                       theme: theme,
                       title: 'Đổi mật khẩu',
@@ -63,36 +64,55 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatarSection(ThemeData theme) {
+  Widget _buildAvatarSection(ThemeData theme, SettingsController controller) {
     final primary = theme.colorScheme.primary;
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [primary.withOpacity(0.65), primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return Obx(() {
+      final path = AvatarCore.avatarPath.value;
+
+      return Column(
+        children: [
+          GestureDetector(
+            onTap: controller.changeAvatar,
+            child: Container(
+              padding: path == null ? const EdgeInsets.all(24) : EdgeInsets.zero,
+              width: 104,
+              height: 104,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: path == null
+                    ? LinearGradient(
+                  colors: [primary.withOpacity(0.65), primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+                    : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: primary.withOpacity(0.25),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  )
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: path == null
+                  ? const Icon(Icons.settings_outlined, color: Colors.white, size: 48)
+                  : Image.file(File(path), fit: BoxFit.cover),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: primary.withOpacity(0.25),
-                blurRadius: 10,
-                spreadRadius: 2,
-              )
-            ],
           ),
-          child: const Icon(Icons.settings_outlined, color: Colors.white, size: 48),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Cài Đặt',
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
+          const SizedBox(height: 16),
+          Text(
+            'Cài Đặt',
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          if (path != null)
+            TextButton(
+              onPressed: AvatarCore.clear,
+              child: const Text('Gỡ ảnh'),
+            ),
+        ],
+      );
+    });
   }
 
   // Công tắc bật/tắt theme theo đúng style light/dark

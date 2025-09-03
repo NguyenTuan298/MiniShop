@@ -1,10 +1,10 @@
-// order_information_view.dart
+// lib/modules/order_information/view/order_information_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/order_information/controller/order_information_controller.dart';
-import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/routes.dart';
+import 'package:minishop/modules/order/controller/order_controller.dart';
 
 class OrderInformationView extends GetView<OrderInformationController> {
   const OrderInformationView({super.key});
@@ -105,18 +105,18 @@ class OrderInformationView extends GetView<OrderInformationController> {
           final qty = it.quantity.value;
           final name = '${it.product.name} (x$qty)';
           final total = it.product.price * qty;
-          return _row(context, name, AppFormatters.formatCurrency(total.toDouble())); // Sửa ở đây
+          return _row(context, name, AppFormatters.formatCurrency(total.toDouble()));
         }),
-        _row(context, 'Vận chuyển', AppFormatters.formatCurrency(controller.shippingFee.toDouble())), // Sửa ở đây
+        _row(context, 'Vận chuyển', AppFormatters.formatCurrency(controller.shippingFee.toDouble())),
         Divider(height: 20, color: theme.dividerColor.withOpacity(0.4)),
-        _row(context, 'Tổng cộng', AppFormatters.formatCurrency(controller.total.toDouble()), isBold: true), // Sửa ở đây
+        _row(context, 'Tổng cộng', AppFormatters.formatCurrency(controller.total.toDouble()), isBold: true),
       ],
     );
   }
 
   Widget _buildShippingEditor(BuildContext context) {
     final theme = Theme.of(context);
-    final profile = Get.find<ProfileService>();
+    final orderCtl = Get.find<OrderController>();
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -142,9 +142,9 @@ class OrderInformationView extends GetView<OrderInformationController> {
             ],
           ),
           const SizedBox(height: 8),
-          Obx(() => _labeledValue(context, 'Họ Tên', profile.name.value)),
-          Obx(() => _labeledValue(context, 'Địa Chỉ', profile.address.value, maxLines: 3)),
-          Obx(() => _labeledValue(context, 'SĐT', profile.phone.value)),
+                    Obx(() => _labeledValue(context, 'Họ Tên', orderCtl.userName.isEmpty ? '...' : orderCtl.userName)),
+                    Obx(() => _labeledValue(context, 'Địa Chỉ', orderCtl.address.isEmpty ? '...' : orderCtl.address, maxLines: 3)),
+                    Obx(() => _labeledValue(context, 'SĐT', orderCtl.phoneNumber.isEmpty ? '...' : orderCtl.phoneNumber)),
         ],
       ),
     );

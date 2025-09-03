@@ -1,16 +1,16 @@
-// lib/views/profile/edit_profile_view.dart
-
+// lib/modules/profile/view/edit_profile_view.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/profile/controller/edit_profile_controller.dart';
+import 'package:minishop/modules/profile/controller/profile_controller.dart' show AvatarCore;
 
 class EditProfileView extends StatelessWidget {
   const EditProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // final controller = Get.put(EditProfileController());
-    final controller = Get.find<EditProfileController>(); // ✅ dùng binding sẵn có
+    final controller = Get.find<EditProfileController>(); // dùng binding sẵn có
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -21,7 +21,6 @@ class EditProfileView extends StatelessWidget {
         ),
         title: Image.asset('assets/images/logo1.png', height: 35),
         centerTitle: true,
-        // không set màu cứng -> theo appBarTheme của theme
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
@@ -29,7 +28,7 @@ class EditProfileView extends StatelessWidget {
           key: controller.formKey,
           child: Column(
             children: [
-              _buildAvatarSection(theme),
+              _buildAvatarSection(theme, controller),
               const SizedBox(height: 12),
               Divider(
                 height: 40,
@@ -78,8 +77,7 @@ class EditProfileView extends StatelessWidget {
                   child: const Text('Lưu thay đổi'),
                 ),
               ),
-              const SizedBox(height: 12),
-              _buildLogoutButton(theme, controller),
+              // ⛔ ĐÃ BỎ nút Log out
             ],
           ),
         ),
@@ -87,36 +85,68 @@ class EditProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatarSection(ThemeData theme) {
-    final primary = theme.colorScheme.primary;
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [primary.withOpacity(0.6), primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: primary.withOpacity(0.25),
-                blurRadius: 10,
-                spreadRadius: 2,
-              )
+  Widget _buildAvatarSection(ThemeData theme, EditProfileController controller) {
+    return Obx(() {
+      final path = AvatarCore.avatarPath.value;
+      final primary = theme.colorScheme.primary;
+
+      return Column(
+        children: [
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              Container(
+                width: 104,
+                height: 104,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: path == null
+                      ? LinearGradient(
+                    colors: [primary.withOpacity(0.6), primary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                      : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: primary.withOpacity(0.25),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    )
+                  ],
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: path == null
+                    ? const Icon(Icons.person_outline, color: Colors.white, size: 48)
+                    : Image.file(File(path), fit: BoxFit.cover),
+              ),
+              Material(
+                color: theme.colorScheme.surface,
+                shape: const CircleBorder(),
+                child: IconButton(
+                  onPressed: controller.changeAvatar,
+                  icon: const Icon(Icons.edit, size: 18),
+                  tooltip: 'Đổi ảnh',
+                ),
+              ),
             ],
           ),
-          child: const Icon(Icons.person_outline, color: Colors.white, size: 48),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Chỉnh sửa thông tin',
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
+          const SizedBox(height: 16),
+          Text(
+            'Chỉnh sửa thông tin',
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          // (tuỳ chọn) nút xoá ảnh
+          if (AvatarCore.avatarPath.value != null) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: AvatarCore.clear,
+              child: const Text('Gỡ ảnh'),
+            ),
+          ],
+        ],
+      );
+    });
   }
 
   Widget _buildTextField({
@@ -183,36 +213,6 @@ class EditProfileView extends StatelessWidget {
           if (v.trim().length < 5) return 'Địa chỉ quá ngắn';
           return null;
         },
-      ),
-    );
-  }
-
-  Widget _buildLogoutButton(ThemeData theme, EditProfileController controller) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: controller.logout,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: theme.colorScheme.error,
-          foregroundColor: theme.colorScheme.onError,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.logout, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Log out',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onError,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

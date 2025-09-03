@@ -1,10 +1,9 @@
-// order_detail_view.dart
+// lib/modules/order/view/order_detail_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:minishop/modules/order/controller/order_controller.dart';
 import 'package:minishop/routes.dart';
-import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'package:minishop/utils/format.dart';
 import 'package:minishop/data/models/cart_item.dart';
 import 'package:minishop/data/models/order.dart';
@@ -35,7 +34,10 @@ class OrderDetailView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(context),
-                _buildSection(context: context, child: _buildOrderSummary(context, order as OrderModel)),
+                _buildSection(
+                  context: context,
+                  child: _buildOrderSummary(context, order as OrderModel),
+                ),
                 _buildItemListSection(context, controller, order as OrderModel),
                 const SizedBox(height: 16),
                 Padding(
@@ -178,15 +180,14 @@ class OrderDetailView extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: _buildImage(item.product.imageUrl), // ✅ tự nhận asset/network
+            child: _buildImage(item.product.imageUrl),
           ),
           const SizedBox(width: 12),
-          // Phần chữ phải Expanded để không tràn ngang
+          // Tránh overflow bằng Expanded + ellipsis
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Tên sản phẩm — giới hạn dòng để tránh overflow
                 Text(
                   item.product.name,
                   maxLines: 2,
@@ -196,7 +197,6 @@ class OrderDetailView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                // Số lượng × giá
                 Text(
                   '${item.quantity.value} × ${AppFormatters.formatCurrency(item.product.price)}',
                   style: theme.textTheme.bodySmall?.copyWith(color: sub),
@@ -211,8 +211,8 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 
+  // ❌ Bỏ ProfileService — dùng thẳng info từ OrderController
   Widget _buildShippingInfo(BuildContext context, OrderController controller) {
-    final profile = Get.find<ProfileService>();
     return _buildInfoCard(
       context: context,
       title: 'Thông tin giao hàng',
@@ -221,9 +221,9 @@ class OrderDetailView extends StatelessWidget {
         child: const Text('Hồ sơ'),
       ),
       children: [
-        Obx(() => _buildInfoRow(context, 'Họ Tên:', profile.name.value)),
-        Obx(() => _buildInfoRow(context, 'Địa Chỉ:', profile.address.value)),
-        Obx(() => _buildInfoRow(context, 'SĐT:', profile.phone.value)),
+        _buildInfoRow(context, 'Họ Tên:', controller.userName),
+        _buildInfoRow(context, 'Địa Chỉ:', controller.address),
+        _buildInfoRow(context, 'SĐT:', controller.phoneNumber),
       ],
     );
   }

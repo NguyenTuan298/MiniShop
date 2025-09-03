@@ -2,7 +2,6 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
-import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'dart:convert' as json;
 
 class AuthService extends GetxService {
@@ -13,6 +12,7 @@ class AuthService extends GetxService {
   // Cache hồ sơ (local)
   final _box = GetStorage();
 
+  // ===== Helpers =====
   Map<String, dynamic>? _decodeJwt(String token) {
     try {
       final parts = token.split('.');
@@ -29,6 +29,7 @@ class AuthService extends GetxService {
     }
   }
 
+  /// Ghi hồ sơ xuống GetStorage để EditProfile đọc được
   void _applyProfileLocal({
     required String name,
     required String phone,
@@ -36,17 +37,11 @@ class AuthService extends GetxService {
     String gender = 'Nam',
     String address = '',
   }) {
-    final profile = Get.isRegistered<ProfileService>()
-        ? Get.find<ProfileService>()
-        : Get.put(ProfileService(), permanent: true);
-
-    profile.saveAll(
-      name: name,
-      phone: phone,
-      email: email,
-      gender: gender,
-      address: address,
-    );
+    _box.write('profile_name', name);
+    _box.write('profile_phone', phone);
+    _box.write('profile_email', email);
+    _box.write('profile_gender', gender);
+    _box.write('profile_address', address);
   }
 
   void _cacheProfileById(String userId, Map<String, String> p) {
@@ -86,14 +81,14 @@ class AuthService extends GetxService {
       body: json.jsonEncode({'phoneEmail': phoneEmail, 'password': password}),
     );
 
-    print('Login response status: ${response.statusCode}'); // Log mã trạng thái
-    print('Login response body: ${response.body}'); // Log toàn bộ body
+    print('Login response status: ${response.statusCode}');
+    print('Login response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = json.jsonDecode(response.body);
       final token = data['token'];
       final refreshToken = data['refreshToken'];
-      print('Parsed login data: $data'); // Log dữ liệu đã parse
+      print('Parsed login data: $data');
 
       _box.write('auth_token', token);
       if (refreshToken != null) {
@@ -124,15 +119,19 @@ class AuthService extends GetxService {
           address: p['address'] ?? '',
         );
       } else {
-        final profile = Get.isRegistered<ProfileService>()
-            ? Get.find<ProfileService>()
-            : Get.put(ProfileService(), permanent: true);
+        // Fallback: đọc giá trị hiện có trong storage, chỉ thay email/phone theo thông tin đăng nhập
+        final curName = _box.read('profile_name') ?? 'User 1';
+        final curPhone = _box.read('profile_phone') ?? '';
+        final curEmail = _box.read('profile_email') ?? '';
+        final curGender = _box.read('profile_gender') ?? 'Nam';
+        final curAddress = _box.read('profile_address') ?? '';
+
         _applyProfileLocal(
-          name: profile.name.value,
-          phone: phoneEmail.contains('@') ? profile.phone.value : phoneEmail,
-          email: phoneEmail.contains('@') ? phoneEmail : profile.email.value,
-          gender: profile.gender.value,
-          address: profile.address.value,
+          name: curName,
+          phone: phoneEmail.contains('@') ? curPhone : phoneEmail,
+          email: phoneEmail.contains('@') ? phoneEmail : curEmail,
+          gender: curGender,
+          address: curAddress,
         );
       }
 
@@ -145,7 +144,8 @@ class AuthService extends GetxService {
   Future<bool> isLoggedIn() async {
     final token = _box.read('auth_token');
     final refreshToken = _box.read('refresh_token');
-    print('Checking login status - Token: $token, RefreshToken: $refreshToken (raw from box: ${_box.read('auth_token')})');
+    print(
+        'Checking login status - Token: $token, RefreshToken: $refreshToken (raw from box: ${_box.read('auth_token')})');
 
     if (token == null) {
       print('No token found, returning false');
@@ -180,11 +180,12 @@ class AuthService extends GetxService {
           await logout();
         } else {
           print('No refresh token available, logging out');
-          await logout(); // Xóa token nếu không có refresh token
+          await logout();
         }
         return false;
       } else {
-        print('Unexpected status code: ${response.statusCode}, keeping token');
+        print(
+            'Unexpected status code: ${response.statusCode}, keeping token (but return false)');
         return false;
       }
     } catch (e) {
@@ -285,8 +286,8 @@ class AuthService extends GetxService {
       if (response.statusCode == 200) {
         return true;
       } else {
-        Get.snackbar("Lỗi",
-            json.jsonDecode(response.body)['error'] ?? 'Reset thất bại');
+        Get.snackbar(
+            "Lỗi", json.jsonDecode(response.body)['error'] ?? 'Reset thất bại');
         return false;
       }
     } catch (e) {
@@ -295,6 +296,7 @@ class AuthService extends GetxService {
     }
   }
 
+  // Giữ nguyên để các màn gọi API sản phẩm dùng
   Future<List<dynamic>> fetchProductsByCategory(String category) async {
     final response =
     await http.get(Uri.parse('$baseUrl/products?category=$category'));

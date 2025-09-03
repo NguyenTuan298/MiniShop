@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minishop/modules/profile/controller/profile_controller.dart';
@@ -28,7 +29,7 @@ class ProfileView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
                 child: Column(
                   children: [
-                    _buildAvatarSection(theme),
+                    _buildAvatarSection(theme, controller),
                     const SizedBox(height: 12),
                     Divider(
                       height: 40,
@@ -53,14 +54,7 @@ class ProfileView extends StatelessWidget {
                       title: 'Cài Đặt',
                       onTap: controller.goToSettings,
                     ),
-                    _buildProfileMenuItem(
-                      theme: theme,
-                      icon: Icons.logout,
-                      title: 'Log out',
-                      onTap: controller.logout,
-                      // dùng màu lỗi của theme thay vì Colors.red
-                      foregroundColor: theme.colorScheme.error,
-                    ),
+
                   ],
                 ),
               ),
@@ -78,40 +72,53 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatarSection(ThemeData theme) {
+  Widget _buildAvatarSection(ThemeData theme, ProfileController controller) {
     final primary = theme.colorScheme.primary;
+    return Obx(() {
+      final path = AvatarCore.avatarPath.value;
+      final displayName = controller.name.value.isNotEmpty
+          ? controller.name.value
+          : 'User'; // tên mặc định khi chưa có
 
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [
-                primary.withOpacity(0.65),
-                primary,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      return Column(
+        children: [
+          GestureDetector(
+            onTap: controller.changeAvatar,
+            child: Container(
+              padding: path == null ? const EdgeInsets.all(24) : EdgeInsets.zero,
+              width: 104,
+              height: 104,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: path == null
+                    ? LinearGradient(
+                  colors: [primary.withOpacity(0.65), primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+                    : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: primary.withOpacity(0.25),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  )
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: path == null
+                  ? const Icon(Icons.person_outline, color: Colors.white, size: 48)
+                  : Image.file(File(path), fit: BoxFit.cover),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: primary.withOpacity(0.25),
-                blurRadius: 10,
-                spreadRadius: 2,
-              )
-            ],
           ),
-          child: const Icon(Icons.person_outline, color: Colors.white, size: 48),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'User 1',
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
+          const SizedBox(height: 16),
+          Text(
+            displayName, // ⬅️ dùng tên động
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildProfileMenuItem({
