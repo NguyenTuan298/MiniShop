@@ -17,7 +17,7 @@ router.get('/check-token', async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const [user] = await pool.query(
-      'SELECT id FROM Users WHERE id = ?',
+      'SELECT id FROM users WHERE id = ?',
       [decoded.id]
     );
     if (user.length === 0) {
@@ -32,6 +32,8 @@ router.get('/check-token', async (req, res) => {
 
 // LOGIN
 router.post('/login', async (req, res) => {
+  console.log('Loaded JWT_SECRET:', process.env.JWT_SECRET); // Kiểm tra secret
+  console.log('Loaded JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET); // Kiểm tra refresh secret
   const { phoneEmail, password } = req.body || {};
 
   if (!phoneEmail || !password) {
@@ -45,14 +47,41 @@ router.post('/login', async (req, res) => {
     );
     if (result.length > 0) {
       const userId = result[0].id;
-      const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '1h' }); // Token hết hạn sau 1 giờ
-      res.status(200).json({ message: 'Đăng nhập thành công', token });
+      const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const refreshToken = jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+      console.log('Generated token:', token, 'refreshToken:', refreshToken); // Log để kiểm tra
+      res.status(200).json({ message: 'Đăng nhập thành công', token, refreshToken });
     } else {
       res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không đúng' });
     }
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Đăng nhập thất bại' });
+  }
+});
+
+// REFRESH TOKEN
+router.post('/refresh', async (req, res) => {
+  const { refreshToken } = req.body || {};
+
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Refresh token không được cung cấp' });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const [user] = await pool.query(
+      'SELECT id FROM users WHERE id = ?',
+      [decoded.id]
+    );
+    if (user.length === 0) {
+      return res.status(401).json({ error: 'Refresh token không hợp lệ' });
+    }
+    const newToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ message: 'Token làm mới thành công', token: newToken });
+  } catch (err) {
+    console.error('Refresh token error:', err);
+    res.status(401).json({ error: 'Refresh token không hợp lệ hoặc đã hết hạn' });
   }
 });
 

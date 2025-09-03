@@ -1,7 +1,6 @@
 // lib/data/services/auth_service.dart
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:minishop/modules/profile/service/profile_service.dart';
 import 'dart:convert' as json;
@@ -9,13 +8,11 @@ import 'dart:convert' as json;
 class AuthService extends GetxService {
   // API auth base
   final String _baseUrl = 'https://minishop-kto7.onrender.com/api/auth';
-  // API chung cho các resource khác (giữ nguyên để dùng fetchProductsByCategory)
   static const String baseUrl = 'https://minishop-kto7.onrender.com/api';
 
   // Cache hồ sơ (local)
   final _box = GetStorage();
 
-  // ===== Helpers =====
   Map<String, dynamic>? _decodeJwt(String token) {
     try {
       final parts = token.split('.');
@@ -89,13 +86,21 @@ class AuthService extends GetxService {
       body: json.jsonEncode({'phoneEmail': phoneEmail, 'password': password}),
     );
 
+    print('Login response status: ${response.statusCode}'); // Log mã trạng thái
+    print('Login response body: ${response.body}'); // Log toàn bộ body
+
     if (response.statusCode == 200) {
       final data = json.jsonDecode(response.body);
       final token = data['token'];
+      final refreshToken = data['refreshToken'];
+      print('Parsed login data: $data'); // Log dữ liệu đã parse
 
-      // Lưu token
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token', token);
+      _box.write('auth_token', token);
+      if (refreshToken != null) {
+        _box.write('refresh_token', refreshToken);
+      }
+      print('Token saved to GetStorage: ${_box.read('auth_token')}');
+      print('RefreshToken saved to GetStorage: ${_box.read('refresh_token')}');
 
       // Lấy userId từ JWT để nạp hồ sơ cache
       String? userId;
@@ -119,7 +124,6 @@ class AuthService extends GetxService {
           address: p['address'] ?? '',
         );
       } else {
-        // Fallback: ít nhất cũng ghi lại email/phone
         final profile = Get.isRegistered<ProfileService>()
             ? Get.find<ProfileService>()
             : Get.put(ProfileService(), permanent: true);
@@ -139,9 +143,14 @@ class AuthService extends GetxService {
   }
 
   Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    if (token == null) return false;
+    final token = _box.read('auth_token');
+    final refreshToken = _box.read('refresh_token');
+    print('Checking login status - Token: $token, RefreshToken: $refreshToken (raw from box: ${_box.read('auth_token')})');
+
+    if (token == null) {
+      print('No token found, returning false');
+      return false;
+    }
 
     try {
       final response = await http
@@ -149,22 +158,44 @@ class AuthService extends GetxService {
         Uri.parse('$_baseUrl/check-token'),
         headers: {'Authorization': 'Bearer $token'},
       )
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 10));
+      print('API /check-token response: ${response.statusCode}');
       if (response.statusCode == 200) {
         return true;
+      } else if (response.statusCode == 401) {
+        if (refreshToken != null) {
+          print('Token expired (401), attempting to refresh');
+          final refreshResponse = await http.post(
+            Uri.parse('$_baseUrl/refresh'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.jsonEncode({'refreshToken': refreshToken}),
+          );
+          if (refreshResponse.statusCode == 200) {
+            final data = json.jsonDecode(refreshResponse.body);
+            _box.write('auth_token', data['token']);
+            print('Token refreshed successfully: ${_box.read('auth_token')}');
+            return true;
+          }
+          print('Refresh failed, logging out');
+          await logout();
+        } else {
+          print('No refresh token available, logging out');
+          await logout(); // Xóa token nếu không có refresh token
+        }
+        return false;
       } else {
-        await logout();
+        print('Unexpected status code: ${response.statusCode}, keeping token');
         return false;
       }
     } catch (e) {
-      await logout();
+      print('Network error or timeout in isLoggedIn: $e');
       return false;
     }
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+    await _box.remove('auth_token');
+    await _box.remove('refresh_token');
   }
 
   Future<bool> register(
@@ -184,20 +215,17 @@ class AuthService extends GetxService {
       final responseData = json.jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        // Lưu full hồ sơ local
         final p = <String, String>{
           'name': name,
           'phone': phone,
           'email': email,
-          'gender': 'Nam', // nếu form có thì truyền đúng
-          'address': '',   // nếu form có thì truyền đúng
+          'gender': 'Nam',
+          'address': '',
         };
 
-        // Cache theo userId để lần sau login nạp lại đủ
         final userId = (responseData['userId'] ?? '').toString();
         if (userId.isNotEmpty) _cacheProfileById(userId, p);
 
-        // Đồng bộ vào ProfileService + GetStorage
         _applyProfileLocal(
           name: p['name']!,
           phone: p['phone']!,
@@ -266,41 +294,12 @@ class AuthService extends GetxService {
     }
   }
 
-  // (Tùy chọn) Hàm cũ – không bắt buộc dùng, giữ lại nếu nơi khác có gọi
-  void _mirrorLoginProfile(String phoneEmail) {
-    try {
-      final profile = Get.isRegistered<ProfileService>()
-          ? Get.find<ProfileService>()
-          : Get.put(ProfileService(), permanent: true);
-
-      String name = profile.name.value;
-      String phone = profile.phone.value;
-      String email = profile.email.value;
-      String gender = profile.gender.value;
-      String address = profile.address.value;
-
-      if (phoneEmail.contains('@')) {
-        email = phoneEmail;
-      } else {
-        phone = phoneEmail;
-      }
-
-      profile.saveAll(
-        name: name,
-        phone: phone,
-        email: email,
-        gender: gender,
-        address: address,
-      );
-    } catch (_) {}
-  }
-
   Future<List<dynamic>> fetchProductsByCategory(String category) async {
     final response =
     await http.get(Uri.parse('$baseUrl/products?category=$category'));
 
     if (response.statusCode == 200) {
-      final data = json.jsonDecode(response.body); // ✅ dùng json.jsonDecode
+      final data = json.jsonDecode(response.body);
       return data['products'];
     } else {
       throw Exception('Failed to load products: ${response.statusCode}');

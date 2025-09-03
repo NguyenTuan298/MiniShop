@@ -12,6 +12,7 @@ void main() async {
   await GetStorage.init();// init storage trước khi runApp
   Get.put(ProfileService(), permanent: true);
   Get.put(CartController(), permanent: true);
+  Get.put(AuthService());
   runApp(const MyApp());
 }
 
@@ -20,15 +21,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(AuthService());     // Khởi tạo AuthService toàn cục
     return GetMaterialApp(
       title: 'Minishop',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeService().theme,
       debugShowCheckedModeBanner: false,
-      // initialRoute: AppRoutes.splash,
-      initialRoute: AppRoutes.dashboard,
+      initialRoute: AppRoutes.splash,
+      // initialRoute: AppRoutes.dashboard,
       getPages: AppPages.routes,
     );
   }
