@@ -56,18 +56,48 @@ class RegisterView extends GetView<RegisterController> {
                 ),
                 const SizedBox(height: 15),
 
-                _buildTextField(controller.phoneController, Icons.phone, "Nhập số điện thoại"),
-                const SizedBox(height: 12),
-                _buildTextField(controller.nameController, Icons.credit_card, "Nhập tên người dùng"),
-                const SizedBox(height: 12),
-                _buildTextField(controller.emailController, Icons.email, "Nhập email"),
+                // Input số điện thoại
+                Obx(() => _buildTextField(
+                  controller.phoneController,
+                  Icons.phone,
+                  "Nhập số điện thoại",
+                  errorText: controller.errorMessage_phone.value.isNotEmpty
+                      ? controller.errorMessage_phone.value
+                      : null,
+                )),
                 const SizedBox(height: 12),
 
+                // Input tên người dùng
+                Obx(() => _buildTextField(
+                  controller.nameController,
+                  Icons.credit_card,
+                  "Nhập tên người dùng",
+                  errorText: controller.errorMessage_username.value.isNotEmpty
+                      ? controller.errorMessage_username.value
+                      : null,
+                )),
+                const SizedBox(height: 12),
+
+                // Input email
+                Obx(() => _buildTextField(
+                  controller.emailController,
+                  Icons.email,
+                  "Nhập email",
+                  errorText: controller.errorMessage_email.value.isNotEmpty
+                      ? controller.errorMessage_email.value
+                      : null,
+                )),
+                const SizedBox(height: 12),
+
+                // Input mật khẩu
                 Obx(() => _buildTextField(
                   controller.passwordController,
                   Icons.lock,
                   "Tạo mật khẩu ",
                   obscureText: !controller.isPasswordVisible.value,
+                  errorText: controller.errorMessage_password.value.isNotEmpty
+                      ? controller.errorMessage_password.value
+                      : null,
                   suffixIcon: IconButton(
                     icon: Icon(controller.isPasswordVisible.value
                         ? Icons.visibility_off
@@ -88,7 +118,9 @@ class RegisterView extends GetView<RegisterController> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    onPressed: controller.register,
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : controller.register,
                     child: Ink(
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
@@ -99,11 +131,14 @@ class RegisterView extends GetView<RegisterController> {
                       child: Container(
                         alignment: Alignment.center,
                         height: 45,
-                        child: const Text(
+                        child: Obx(() => controller.isLoading.value
+                            ? CircularProgressIndicator(color: Colors.white)
+                            : const Text(
                           "ĐĂNG KÝ",
                           style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        )),
                       ),
                     ),
                   ),
@@ -164,27 +199,37 @@ class RegisterView extends GetView<RegisterController> {
       String hint, {
         bool obscureText = false,
         Widget? suffixIcon,
-        double fontSize = 14, // có thể chỉnh riêng cho mỗi field
-        EdgeInsetsGeometry? padding, // tuỳ chỉnh padding
+        double fontSize = 14,
+        EdgeInsetsGeometry? padding,
+        String? errorText,
       }) {
-    return TextField(
-      style: TextStyle(color: Colors.black, fontSize: fontSize),
-      controller: controller,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        isDense: true, // thu gọn chiều cao
-        contentPadding: padding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        prefixIcon: Icon(icon, size: 20),
-        suffixIcon: suffixIcon,
-        hintText: hint,
-        hintStyle: TextStyle(fontSize: fontSize),
-        filled: true,
-        fillColor: Colors.grey.shade100,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          style: TextStyle(color: Colors.black, fontSize: fontSize),
+          controller: controller,
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            isDense: true, // thu gọn chiều cao
+            contentPadding:
+            padding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            prefixIcon: Icon(icon, size: 20),
+            suffixIcon: suffixIcon,
+            hintText: hint,
+            hintStyle: TextStyle(fontSize: fontSize),
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+            errorText: errorText, // Hiển thị lỗi trực tiếp trong TextField
+            errorStyle: TextStyle(fontSize: 12), // Kiểu chữ cho lỗi
+          ),
         ),
-      ),
+        if (errorText != null) SizedBox(height: 8), // Khoảng cách nếu có lỗi
+      ],
     );
   }
 }

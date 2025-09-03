@@ -196,6 +196,7 @@ class AuthService extends GetxService {
   Future<void> logout() async {
     await _box.remove('auth_token');
     await _box.remove('refresh_token');
+    Get.offAllNamed('/login');
   }
 
   Future<bool> register(

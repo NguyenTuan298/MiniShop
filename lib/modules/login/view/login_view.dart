@@ -44,8 +44,6 @@ class LoginView extends GetView<LoginController> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // const Spacer(),
-                    // Icon(Icons.close, color: Colors.grey.shade500),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -65,12 +63,15 @@ class LoginView extends GetView<LoginController> {
                 const SizedBox(height: 20),
 
                 // Input số điện thoại hoặc email
-                _buildTextField(
+                Obx(() => _buildTextField(
                   controller.phoneEmailController,
                   Icons.person,
                   "Nhập số điện thoại hoặc email",
+                  errorText: controller.errorMessage_phoneEmail.value.isNotEmpty
+                      ? controller.errorMessage_phoneEmail.value
+                      : null,
                   fontSize: 14,
-                ),
+                )),
                 const SizedBox(height: 20),
 
                 // Input mật khẩu
@@ -79,6 +80,9 @@ class LoginView extends GetView<LoginController> {
                   Icons.lock,
                   "Nhập mật khẩu",
                   obscureText: !controller.isPasswordVisible.value,
+                  errorText: controller.errorMessage_password.value.isNotEmpty
+                      ? controller.errorMessage_password.value
+                      : null,
                   fontSize: 14,
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -89,10 +93,6 @@ class LoginView extends GetView<LoginController> {
                     ),
                     onPressed: controller.togglePasswordVisibility,
                   ),
-                )),
-                Obx(() => Text(
-                  controller.errorMessage.value,
-                  style: TextStyle(color: Colors.red),
                 )),
                 const SizedBox(height: 16),
 
@@ -108,7 +108,9 @@ class LoginView extends GetView<LoginController> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    onPressed: controller.login,
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : controller.login,
                     child: Ink(
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
@@ -119,11 +121,14 @@ class LoginView extends GetView<LoginController> {
                       child: Container(
                         alignment: Alignment.center,
                         height: 45,
-                        child: const Text(
+                        child: Obx(() => controller.isLoading.value
+                            ? CircularProgressIndicator(color: Colors.white)
+                            : const Text(
                           "ĐĂNG NHẬP",
                           style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        )),
                       ),
                     ),
                   ),
@@ -133,7 +138,7 @@ class LoginView extends GetView<LoginController> {
 
                 // Quên mật khẩu
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     Get.toNamed('/forgot-password');
                   },
                   child: Align(
@@ -231,26 +236,35 @@ class LoginView extends GetView<LoginController> {
         bool obscureText = false,
         Widget? suffixIcon,
         double fontSize = 16,
+        String? errorText,
       }) {
-    return TextField(
-      style: TextStyle(color: Colors.black, fontSize: fontSize),
-      controller: controller,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        isDense: true,
-        contentPadding:
-        const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        prefixIcon: Icon(icon, size: 20),
-        suffixIcon: suffixIcon,
-        hintText: hint,
-        hintStyle: TextStyle(fontSize: fontSize),
-        filled: true,
-        fillColor: Colors.grey.shade100,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          style: TextStyle(color: Colors.black, fontSize: fontSize),
+          controller: controller,
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding:
+            const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            prefixIcon: Icon(icon, size: 20),
+            suffixIcon: suffixIcon,
+            hintText: hint,
+            hintStyle: TextStyle(fontSize: fontSize),
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            errorText: errorText, // Hiển thị lỗi trực tiếp trong TextField
+            errorStyle: TextStyle(fontSize: 12), // Kiểu chữ cho lỗi
+          ),
         ),
-      ),
+        if (errorText != null) SizedBox(height: 8), // Khoảng cách nếu có lỗi
+      ],
     );
   }
 }

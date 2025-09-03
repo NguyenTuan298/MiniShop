@@ -14,7 +14,8 @@ class LoginController extends GetxController {
   // Observables
   final isPasswordVisible = false.obs;
   final isLoading = false.obs;
-  final errorMessage = RxString(''); // Thêm biến observable cho thông báo lỗi
+  final errorMessage_phoneEmail = RxString('');
+  final errorMessage_password = RxString('');
 
   // Toggle password visibility
   void togglePasswordVisibility() {
@@ -23,8 +24,6 @@ class LoginController extends GetxController {
 
   // Handle login
   Future<void> login() async {
-    // Reset error message
-    errorMessage.value = '';
 
     // Trim input
     final phoneEmail = phoneEmailController.text.trim();
@@ -32,20 +31,25 @@ class LoginController extends GetxController {
 
     // Kiểm tra đầu vào
     if (phoneEmail.isEmpty && password.isEmpty) {
-      errorMessage.value = 'Bạn cần nhập số điện thoại, email hoặc mật khẩu';
+      if(phoneEmail.isEmpty){
+        errorMessage_phoneEmail.value = 'Bạn cần nhập sđt or email';
+      }
+      if(password.isEmpty){
+        errorMessage_password.value = 'Bạn cần nhập mật khẩu';
+      }
       return;
     } else if (phoneEmail.isEmpty) {
-      errorMessage.value = 'Bạn cần nhập số điện thoại hoặc email';
+      errorMessage_phoneEmail.value = 'Bạn cần nhập sđt or email';
       return;
     } else if (password.isEmpty) {
-      errorMessage.value = 'Bạn cần nhập mật khẩu';
+      errorMessage_password.value = 'Bạn cần nhập mật khẩu';
       return;
     }
 
     try {
       print('Phone/Email: $phoneEmail'); // Debug
       print('Password: $password'); // Debug
-      isLoading.value = true;
+      // isLoading.value = true;
       final response = await _authService.login(phoneEmail, password);
 
       if (response['message'] == 'Đăng nhập thành công') {
@@ -53,8 +57,10 @@ class LoginController extends GetxController {
         Get.snackbar('Thành công', 'Đăng nhập thành công',
             backgroundColor: Colors.green, colorText: Colors.white);
       } else {
-        Get.snackbar('Lỗi', 'Đăng nhập thất bại',
-            backgroundColor: Colors.red, colorText: Colors.white);
+        // Get.snackbar('Lỗi', 'Đăng nhập thất bại',
+        //     backgroundColor: Colors.red, colorText: Colors.white);
+        errorMessage_phoneEmail.value = 'Sai số điện thoại hoặc email';
+        errorMessage_password.value = 'Sai mật khẩu';
       }
     } catch (e) {
       Get.snackbar('Lỗi', 'Đăng nhập thất bại: ${e.toString()}',

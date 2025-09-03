@@ -14,6 +14,11 @@ class RegisterController extends GetxController {
 
   final isPasswordVisible = false.obs;
   final isLoading = false.obs;
+  final errorMessage_phone = RxString('');
+  final errorMessage_username = RxString('');
+  final errorMessage_email = RxString('');
+  final errorMessage_password = RxString('');
+
 
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
@@ -25,17 +30,35 @@ class RegisterController extends GetxController {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    if (phone.isEmpty || name.isEmpty || email.isEmpty || password.isEmpty) {
-      Get.snackbar("Lỗi", "Vui lòng nhập đầy đủ thông tin",
-          snackPosition: SnackPosition.TOP);
+    if (phone.isEmpty && name.isEmpty && email.isEmpty && password.isEmpty) {
+      if (phone.isEmpty) {
+        errorMessage_phone.value = 'Bạn cần nhập số điện thoại';
+      }
+      if (name.isEmpty) {
+        errorMessage_username.value = 'Bạn cần nhập tên';
+      }
+      if (email.isEmpty) {
+        errorMessage_email.value = 'Bạn cần nhập email';
+      }
+      if (password.isEmpty) {
+        errorMessage_password.value = 'Bạn cần nhập mật khẩu';
+      }
+      return;
+    }
+    if (phone.length != 10) {
+      errorMessage_phone.value = 'Số điện thoại phải có 10 chữ số';
+      return;
+    }
+    if (name.length < 3) {
+      errorMessage_username.value = 'Tên phải có ít nhất 3 ký tự';
       return;
     }
     if (!GetUtils.isEmail(email)) {
-      Get.snackbar("Lỗi", "Email không hợp lệ");
+      errorMessage_email.value = 'Email không hợp lệ';
       return;
     }
     if (password.length < 6) {
-      Get.snackbar("Lỗi", "Mật khẩu phải có ít nhất 6 ký tự");
+      errorMessage_password.value = 'Mật khẩu phải có ít nhất 6 ký tự';
       return;
     }
 
