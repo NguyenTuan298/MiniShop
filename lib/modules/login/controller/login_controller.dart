@@ -14,6 +14,7 @@ class LoginController extends GetxController {
   // Observables
   final isPasswordVisible = false.obs;
   final isLoading = false.obs;
+  final errorMessage = RxString(''); // Thêm biến observable cho thông báo lỗi
 
   // Toggle password visibility
   void togglePasswordVisibility() {
@@ -22,23 +23,42 @@ class LoginController extends GetxController {
 
   // Handle login
   Future<void> login() async {
+    // Reset error message
+    errorMessage.value = '';
+
+    // Trim input
+    final phoneEmail = phoneEmailController.text.trim();
+    final password = passwordController.text.trim();
+
+    // Kiểm tra đầu vào
+    if (phoneEmail.isEmpty && password.isEmpty) {
+      errorMessage.value = 'Bạn cần nhập số điện thoại, email hoặc mật khẩu';
+      return;
+    } else if (phoneEmail.isEmpty) {
+      errorMessage.value = 'Bạn cần nhập số điện thoại hoặc email';
+      return;
+    } else if (password.isEmpty) {
+      errorMessage.value = 'Bạn cần nhập mật khẩu';
+      return;
+    }
+
     try {
-      print('Phone/Email: ${phoneEmailController.text.trim()}'); // Debug
-      print('Password: ${passwordController.text.trim()}'); // Debug
+      print('Phone/Email: $phoneEmail'); // Debug
+      print('Password: $password'); // Debug
       isLoading.value = true;
-      final response = await _authService.login(
-        phoneEmailController.text.trim(),
-        passwordController.text.trim(),
-      );
+      final response = await _authService.login(phoneEmail, password);
 
       if (response['message'] == 'Đăng nhập thành công') {
         Get.offAllNamed('/dashboard'); // Chuyển đến dashboard sau khi đăng nhập thành công
-        Get.snackbar('Thành công', 'Đăng nhập thành công', backgroundColor: Colors.green, colorText: Colors.white);
+        Get.snackbar('Thành công', 'Đăng nhập thành công',
+            backgroundColor: Colors.green, colorText: Colors.white);
       } else {
-        Get.snackbar('Lỗi', 'Đăng nhập thất bại', backgroundColor: Colors.red, colorText: Colors.white);
+        Get.snackbar('Lỗi', 'Đăng nhập thất bại',
+            backgroundColor: Colors.red, colorText: Colors.white);
       }
     } catch (e) {
-      Get.snackbar('Lỗi', 'Đăng nhập thất bại: ${e.toString()}', backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar('Lỗi', 'Đăng nhập thất bại: ${e.toString()}',
+          backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }

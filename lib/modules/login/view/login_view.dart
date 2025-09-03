@@ -90,6 +90,10 @@ class LoginView extends GetView<LoginController> {
                     onPressed: controller.togglePasswordVisibility,
                   ),
                 )),
+                Obx(() => Text(
+                  controller.errorMessage.value,
+                  style: TextStyle(color: Colors.red),
+                )),
                 const SizedBox(height: 16),
 
                 // Nút đăng nhập
