@@ -33,7 +33,7 @@ class SettingsController extends GetxController {
 
   Future<void> logout() async {
     await _authService.logout();
-    // await AvatarCore.clear();
+    await AvatarCore.clear();
   }
   Future<void> changeAvatar() async {
     await AvatarCore.pickFromGallery();
