@@ -27,13 +27,13 @@ class SettingsController extends GetxController {
     Get.snackbar('Thông báo', 'Chức năng Đổi mật khẩu đang được phát triển.');
   }
 
-  void deleteAccount() {
-    Get.snackbar('Thông báo', 'Chức năng Xóa tài khoản đang được phát triển.');
+  Future<void> deleteAccount() async {
+    await _authService.deleteAccount();
   }
 
   Future<void> logout() async {
     await _authService.logout();
-    await AvatarCore.clear(); // ⬅️ thêm: xóa avatar của user hiện tại sau khi đăng xuất
+    // await AvatarCore.clear();
   }
   Future<void> changeAvatar() async {
     await AvatarCore.pickFromGallery();

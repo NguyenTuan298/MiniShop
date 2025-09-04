@@ -146,8 +146,4 @@ class ProfileController extends GetxController {
   Future<void> changeAvatar() async {
     await AvatarCore.pickFromGallery();
   }
-
-  void logout() {
-    Get.snackbar('Thông báo', 'Người dùng đã đăng xuất.');
-  }
 }

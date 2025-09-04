@@ -291,4 +291,38 @@ class AuthService extends GetxService {
       return false;
     }
   }
+
+  /// Xóa tài khoản
+  Future<bool> deleteAccount() async {
+    final token = _box.read('auth_token');
+    if (token == null) {
+      Get.snackbar("Lỗi", "Bạn cần đăng nhập để xóa tài khoản");
+      return false;
+    }
+
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/delete-account'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Xóa tất cả dữ liệu liên quan trong GetStorage
+        await _box.erase(); // Xóa toàn bộ storage
+        Get.offAllNamed('/login'); // Chuyển về màn hình đăng nhập
+        Get.snackbar("Thành công", "Tài khoản đã được xóa");
+        return true;
+      } else {
+        final responseData = json.jsonDecode(response.body);
+        Get.snackbar("Lỗi", responseData['error'] ?? 'Xóa tài khoản thất bại');
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar("Lỗi", "Kết nối đến server thất bại: $e");
+      return false;
+    }
+  }
 }

@@ -223,4 +223,28 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+// DELETE ACCOUNT
+router.delete('/delete-account', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const [result] = await pool.query(
+      'DELETE FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Người dùng không tồn tại' });
+    }
+
+    // Xóa các OTP liên quan (nếu có)
+    await pool.query('DELETE FROM otps WHERE user_id = ?', [userId]);
+
+    res.status(200).json({ message: 'Tài khoản đã được xóa thành công' });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    res.status(500).json({ error: 'Xóa tài khoản thất bại' });
+  }
+});
+
 module.exports = router;
