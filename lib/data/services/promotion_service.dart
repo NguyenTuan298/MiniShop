@@ -5,10 +5,10 @@ import 'package:minishop/data/models/promotion.dart';
 import 'package:minishop/data/services/auth_service.dart'; // để tái dùng baseUrl
 
 class PromotionService {
-  final String _base = AuthService.baseUrl; // https://minishop-kto7.onrender.com/api
+  static const String baseUrl = 'https://minishop-kto7.onrender.com/api';
 
   Future<List<Promotion>> fetchActiveTop10() async {
-    final uri = Uri.parse('$_base/promotions?active=1');
+    final uri = Uri.parse('$baseUrl/promotions?active=1');
     final resp = await http.get(uri);
 
     if (resp.statusCode != 200) {
