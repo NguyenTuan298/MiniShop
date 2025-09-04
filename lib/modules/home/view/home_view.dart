@@ -4,13 +4,38 @@ import 'package:get/get.dart';
 import '../../cart/controller/cart_controller.dart';
 import '../controller/home_controller.dart';
 
-class HomeView extends StatelessWidget {
+// NEW: dùng model + service + formatter
+import 'package:minishop/data/models/product_model.dart';
+import 'package:minishop/data/services/product_service.dart';
+import 'package:minishop/utils/format.dart';
+
+class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
   @override
+  State<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  final HomeController controller = Get.find<HomeController>();
+  final CartController cartController = Get.find<CartController>();
+
+  // Giữ nguyên ProductService (KHÔNG sửa file service)
+  final ProductService _productService = Get.put(ProductService());
+
+  // Chọn danh mục để lấy gợi ý (bạn có thể đổi: 'dien_tu' | 'thoi_trang' | 'thuc_pham')
+  static const String _recommendedCategory = 'dien_tu';
+
+  late Future<List<dynamic>> _recFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _recFuture = _productService.fetchProductsByCategory(_recommendedCategory);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final HomeController controller = Get.find<HomeController>();
-    final CartController cartController = Get.find<CartController>();
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -24,14 +49,19 @@ class HomeView extends StatelessWidget {
         backgroundColor: Colors.white70,
       ),
       body: RefreshIndicator(
-        onRefresh: controller.loadPromotions,
+        onRefresh: () async {
+          await controller.loadPromotions();
+          setState(() {
+            _recFuture = _productService.fetchProductsByCategory(_recommendedCategory);
+          });
+        },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Tin nổi bật (lấy từ API promotions/active)
+              // ================== Tin nổi bật ==================
               Text(
                 'Tin nổi bật',
                 style: TextStyle(
@@ -67,7 +97,6 @@ class HomeView extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Ảnh banner từ API (absolute URL)
                                 AspectRatio(
                                   aspectRatio: 16 / 9,
                                   child: Image.network(
@@ -105,8 +134,7 @@ class HomeView extends StatelessWidget {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text('Giảm ${p.discountPercent}%'
-                                              , style: const TextStyle(color: Colors.red)),
+                                          const Text('Giảm %', style: TextStyle(color: Colors.red)),
                                           Text(
                                             '${_fmtDate(p.startAt)} → ${_fmtDate(p.endAt)}',
                                             style: theme.textTheme.bodySmall,
@@ -128,7 +156,7 @@ class HomeView extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Danh mục nổi bật
+              // ================== Danh mục nổi bật ==================
               const Text(
                 'Danh mục nổi bật',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -149,45 +177,156 @@ class HomeView extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Sản phẩm gợi ý (tạm thời như cũ)
+              // ================== Sản phẩm gợi ý (LIÊN KẾT API) ==================
               const Text(
                 'Sản phẩm gợi ý',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.7,
-                children: [
-                  _buildProductCard(
-                    name: 'Điện thoại iPhone',
-                    image: 'assets/images/iphone.png',
-                    price: '20.000.000đ',
-                    cartController: cartController,
-                  ),
-                  _buildProductCard(
-                    name: 'Laptop Dell',
-                    image: 'assets/images/laptop_dell.png',
-                    price: '18.000.000đ',
-                    cartController: cartController,
-                  ),
-                  _buildProductCard(
-                    name: 'Đồng hồ Casio',
-                    image: 'assets/images/dongho.png',
-                    price: '2.000.000đ',
-                    cartController: cartController,
-                  ),
-                  _buildProductCard(
-                    name: 'Tivi Samsung',
-                    image: 'assets/images/tivisamsung.png',
-                    price: '15.000.000đ',
-                    cartController: cartController,
-                  ),
-                ],
+
+              FutureBuilder<List<dynamic>>(
+                future: _recFuture,
+                builder: (context, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return _recSkeletonGrid(context);
+                  }
+                  if (snap.hasError) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Không tải được sản phẩm gợi ý: ${snap.error}',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _recFuture = _productService.fetchProductsByCategory(_recommendedCategory);
+                            });
+                          },
+                          child: const Text('Thử lại'),
+                        ),
+                      ],
+                    );
+                  }
+
+                  final raw = snap.data ?? [];
+                  final items = raw
+                      .whereType<Map<String, dynamic>>()
+                      .map(Product.fromJson)
+                      .toList();
+
+                  if (items.isEmpty) {
+                    return const Text('Hiện chưa có sản phẩm gợi ý.');
+                  }
+
+                  return GridView.builder(
+                    itemCount: items.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 0.7,
+                    ),
+                    itemBuilder: (ctx, i) {
+                      final p = items[i];
+                      final outOfStock = p.stock <= 0;
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 6,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Ảnh: tự nhận URL/asset
+                            Expanded(
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: _SmartImage(p.imageUrl),
+                                  ),
+                                  if (outOfStock)
+                                    Positioned(
+                                      top: 8,
+                                      left: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.6),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Text(
+                                          'Hết hàng',
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    p.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        AppFormatters.formatCurrency(p.price),
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: Theme.of(context).colorScheme.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Material(
+                                        color: outOfStock
+                                            ? Theme.of(context).colorScheme.primary.withOpacity(0.4)
+                                            : Theme.of(context).colorScheme.primary,
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          customBorder: const CircleBorder(),
+                                          onTap: outOfStock ? null : () => cartController.addToCart(p),
+                                          child: const SizedBox(
+                                            width: 32,
+                                            height: 32,
+                                            child: Icon(Icons.add, size: 16, color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ],
           ),
@@ -199,7 +338,6 @@ class HomeView extends StatelessWidget {
   // ===== Widgets phụ =====
 
   static String _fmtDate(DateTime d) {
-    // dd/MM/yyyy
     final dd = d.day.toString().padLeft(2, '0');
     final mm = d.month.toString().padLeft(2, '0');
     final yyyy = d.year.toString();
@@ -261,71 +399,54 @@ class HomeView extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildProductCard({
-    required String name,
-    required String image,
-    required String price,
-    required CartController cartController,
-  }) {
-    return Container(
+// Skeleton cho grid “Sản phẩm gợi ý”
+Widget _recSkeletonGrid(BuildContext context) {
+  return GridView.builder(
+    itemCount: 4,
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 0.7,
+    ),
+    itemBuilder: (ctx, i) => Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.asset(image, fit: BoxFit.cover, width: double.infinity),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(price, style: const TextStyle(color: Colors.red)),
-                    GestureDetector(
-                      onTap: () {
-                        Get.snackbar(
-                          'Thông báo',
-                          '$name đã được thêm vào giỏ hàng',
-                          snackPosition: SnackPosition.TOP,
-                          backgroundColor: Colors.green.withOpacity(0.8),
-                          colorText: Colors.white,
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.add, color: Colors.white, size: 20),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    ),
+  );
+}
+/// Ảnh thông minh: URL -> network, còn lại -> asset. Có fallback icon khi lỗi.
+class _SmartImage extends StatelessWidget {
+  final String src;
+  const _SmartImage(this.src);
+
+  bool get _isUrl => src.startsWith('http://') || src.startsWith('https://');
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isUrl) {
+      return Image.network(
+        src,
+        fit: BoxFit.cover,
+        errorBuilder: (c, e, s) => _err(),
+      );
+    }
+    return Image.asset(
+      src,
+      fit: BoxFit.cover,
+      errorBuilder: (c, e, s) => _err(),
     );
   }
+
+  Widget _err() => Container(
+    color: const Color(0xFFF2F2F2),
+    alignment: Alignment.center,
+    child: const Icon(Icons.image_not_supported),
+  );
 }
