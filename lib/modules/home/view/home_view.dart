@@ -23,15 +23,84 @@ class _HomeViewState extends State<HomeView> {
   // Giữ nguyên ProductService (KHÔNG sửa file service)
   final ProductService _productService = Get.put(ProductService());
 
-  // Chọn danh mục để lấy gợi ý (bạn có thể đổi: 'dien_tu' | 'thoi_trang' | 'thuc_pham')
-  static const String _recommendedCategory = 'dien_tu';
+  // ================== CẤU HÌNH GỢI Ý (đa danh mục) ==================
+  // Chọn nhiều danh mục để gợi ý (đổi theo DB của bạn)
+  static const List<String> _recommendedCategories = [
+    'dien_tu',
+    'thoi_trang',
+    'thuc_pham',
+  ];
 
-  late Future<List<dynamic>> _recFuture;
+  // Giới hạn hiển thị tổng & số lượng mỗi danh mục
+  static const int _maxRecommended = 12;
+  static const int _perCategory = 6;
+
+  // Future danh sách gợi ý đã trộn
+  late Future<List<Map<String, dynamic>>> _recFuture;
 
   @override
   void initState() {
     super.initState();
-    _recFuture = _productService.fetchProductsByCategory(_recommendedCategory);
+    // Lấy gợi ý đa danh mục ngay khi mở trang
+    _recFuture = _fetchRecommendedMulti();
+    // Khởi động tải promotions nếu controller chưa có
+    if (controller.promotions.isEmpty && !controller.isLoadingPromos.value) {
+      controller.loadPromotions();
+    }
+  }
+
+  // Gọi API cho nhiều danh mục (không sửa ProductService),
+  // gom theo round-robin, khử trùng lặp theo id, cắt theo _maxRecommended.
+  Future<List<Map<String, dynamic>>> _fetchRecommendedMulti() async {
+    Future<List<dynamic>> _safeFetch(String cat) async {
+      try {
+        return await _productService.fetchProductsByCategory(cat);
+      } catch (_) {
+        return <dynamic>[]; // Nếu 1 danh mục lỗi vẫn trả về rỗng để không “đổ bể” cả trang
+      }
+    }
+
+    // Gọi song song các danh mục
+    final rawLists = await Future.wait(
+      _recommendedCategories.map(_safeFetch),
+    );
+
+    // Chuẩn hóa từng danh mục: giữ Map và cắt theo _perCategory
+    final perCat = rawLists
+        .map((lst) => lst.whereType<Map<String, dynamic>>().take(_perCategory).toList())
+        .toList();
+
+    // Trộn vòng-tròn (round-robin) để xen kẽ danh mục
+    final merged = <Map<String, dynamic>>[];
+    for (int i = 0;; i++) {
+      bool added = false;
+      for (final l in perCat) {
+        if (i < l.length) {
+          merged.add(l[i]);
+          added = true;
+        }
+      }
+      if (!added) break;
+    }
+
+    // Khử trùng lặp theo id (nếu API trả trùng giữa các danh mục)
+    final seen = <int>{};
+    final unique = <Map<String, dynamic>>[];
+    for (final m in merged) {
+      final id = m['id'];
+      if (id is int) {
+        if (!seen.contains(id)) {
+          seen.add(id);
+          unique.add(m);
+        }
+      } else {
+        // Không có id chuẩn -> vẫn thêm để tránh mất dữ liệu
+        unique.add(m);
+      }
+    }
+
+    // Giới hạn tổng số item hiển thị
+    return unique.take(_maxRecommended).toList();
   }
 
   @override
@@ -50,9 +119,10 @@ class _HomeViewState extends State<HomeView> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          // Làm mới cả promotions và gợi ý đa danh mục
           await controller.loadPromotions();
           setState(() {
-            _recFuture = _productService.fetchProductsByCategory(_recommendedCategory);
+            _recFuture = _fetchRecommendedMulti();
           });
         },
         child: SingleChildScrollView(
@@ -134,7 +204,11 @@ class _HomeViewState extends State<HomeView> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          const Text('Giảm %', style: TextStyle(color: Colors.red)),
+                                          // Hiển thị phần trăm giảm nếu có
+                                          Text(
+                                            'Giảm ${p.discountPercent ?? 0}%',
+                                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                                          ),
                                           Text(
                                             '${_fmtDate(p.startAt)} → ${_fmtDate(p.endAt)}',
                                             style: theme.textTheme.bodySmall,
@@ -184,7 +258,7 @@ class _HomeViewState extends State<HomeView> {
               ),
               const SizedBox(height: 12),
 
-              FutureBuilder<List<dynamic>>(
+              FutureBuilder<List<Map<String, dynamic>>>(
                 future: _recFuture,
                 builder: (context, snap) {
                   if (snap.connectionState == ConnectionState.waiting) {
@@ -202,7 +276,7 @@ class _HomeViewState extends State<HomeView> {
                         TextButton(
                           onPressed: () {
                             setState(() {
-                              _recFuture = _productService.fetchProductsByCategory(_recommendedCategory);
+                              _recFuture = _fetchRecommendedMulti();
                             });
                           },
                           child: const Text('Thử lại'),
@@ -211,11 +285,8 @@ class _HomeViewState extends State<HomeView> {
                     );
                   }
 
-                  final raw = snap.data ?? [];
-                  final items = raw
-                      .whereType<Map<String, dynamic>>()
-                      .map(Product.fromJson)
-                      .toList();
+                  final data = snap.data ?? <Map<String, dynamic>>[];
+                  final items = data.map(Product.fromJson).toList();
 
                   if (items.isEmpty) {
                     return const Text('Hiện chưa có sản phẩm gợi ý.');
@@ -421,6 +492,7 @@ Widget _recSkeletonGrid(BuildContext context) {
     ),
   );
 }
+
 /// Ảnh thông minh: URL -> network, còn lại -> asset. Có fallback icon khi lỗi.
 class _SmartImage extends StatelessWidget {
   final String src;
