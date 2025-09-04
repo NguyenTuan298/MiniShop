@@ -1,20 +1,33 @@
+// lib/modules/home/controller/home_controller.dart
 import 'package:get/get.dart';
+import 'package:minishop/data/models/promotion.dart';
+import 'package:minishop/data/services/promotion_service.dart';
 
 class HomeController extends GetxController {
-  var newsList = <Map<String, String>>[].obs;
+  final promotions = <Promotion>[].obs;
+  final isLoadingPromos = false.obs;
+  final promoError = RxnString();
+
+  final _service = PromotionService();
 
   @override
   void onInit() {
     super.onInit();
-    newsList.value = [
-      {
-        'image': 'assets/images/noibat.png',
-        'description': 'Khuyến mãi hot tháng 9 - Giảm giá đến 50%!'
-      },
-      {
-        'image': 'assets/images/noibat.png',
-        'description': 'Mua 1 tặng 1 cho đơn hàng hôm nay!'
-      },
-    ];
+    loadPromotions();
+  }
+
+  Future<void> loadPromotions() async {
+    try {
+      isLoadingPromos.value = true;
+      promoError.value = null;
+
+      final list = await _service.fetchActiveTop10();
+      promotions.assignAll(list);
+    } catch (e) {
+      promoError.value = e.toString();
+      promotions.clear();
+    } finally {
+      isLoadingPromos.value = false;
+    }
   }
 }

@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const authRoutes = require('../routes/auth');
 const productRoutes = require('../routes/products');
+const promotionsRoutes = require('../routes/promotions');
 const path = require('path');
 
 
@@ -18,10 +19,10 @@ app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api', productRoutes);
-
+app.use('/api/promotions', promotionsRoutes);
 
 app.listen(port, () => {
-  console.log(`Server running on porthttp://localhost:${port}`);
-  console.log(process.env.MYSQLHOST);
+ console.log(`Server running at http://localhost:${port}`); // ✅ sửa log
+ console.log('MYSQLHOST =', process.env.MYSQLHOST);
 });
 
