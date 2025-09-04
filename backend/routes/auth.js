@@ -8,6 +8,23 @@ const jwt = require('jsonwebtoken');
 const generateOTP = () => '111111';
 
 // Middleware kiểm tra token
+const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ error: 'Token không được cung cấp' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    console.error('Authentication error:', err);
+    res.status(401).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
+  }
+};
+
+// Middleware kiểm tra token
 router.get('/check-token', async (req, res) => {
   const token = req.headers['authorization']?.replace('Bearer ', '');
   if (!token) {
@@ -32,8 +49,8 @@ router.get('/check-token', async (req, res) => {
 
 // LOGIN
 router.post('/login', async (req, res) => {
-  console.log('Loaded JWT_SECRET:', process.env.JWT_SECRET); // Kiểm tra secret
-  console.log('Loaded JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET); // Kiểm tra refresh secret
+  console.log('Loaded JWT_SECRET:', process.env.JWT_SECRET);
+  console.log('Loaded JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET);
   const { phoneEmail, password } = req.body || {};
 
   if (!phoneEmail || !password) {
@@ -49,7 +66,7 @@ router.post('/login', async (req, res) => {
       const userId = result[0].id;
       const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
       const refreshToken = jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
-      console.log('Generated token:', token, 'refreshToken:', refreshToken); // Log để kiểm tra
+      console.log('Generated token:', token, 'refreshToken:', refreshToken);
       res.status(200).json({ message: 'Đăng nhập thành công', token, refreshToken });
     } else {
       res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không đúng' });
@@ -88,7 +105,7 @@ router.post('/refresh', async (req, res) => {
 // REGISTER
 router.post('/register', async (req, res) => {
   console.log('Request body:', req.body);
-  const { email, phone, password, name } = req.body || {}; // Thêm name vào destructuring
+  const { email, phone, password, name } = req.body || {};
 
   if (!email || !password) {
     console.log('Validation failed:', { email, phone, password, name });
@@ -108,7 +125,7 @@ router.post('/register', async (req, res) => {
     // Thêm user mới với cột name
     const [result] = await pool.query(
       'INSERT INTO users (email, phone, password, name, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [email, phone || null, password, name || null] // Thêm name vào query và giá trị mặc định null nếu không có
+      [email, phone || null, password, name || null]
     );
     const userId = result.insertId;
 
