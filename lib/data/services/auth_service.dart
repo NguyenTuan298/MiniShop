@@ -6,13 +6,9 @@ import 'dart:convert' as json;
 
 class AuthService extends GetxService {
   // API auth base
-  final String _baseUrl = 'https://minishop-kto7.onrender.com/api/auth';
-  static const String baseUrl = 'https://minishop-kto7.onrender.com/api';
-
-  // Cache hồ sơ (local)
+  static const String baseUrl = 'https://minishop-kto7.onrender.com/api/auth';
   final _box = GetStorage();
 
-  // ===== Helpers =====
   Map<String, dynamic>? _decodeJwt(String token) {
     try {
       final parts = token.split('.');
@@ -76,7 +72,7 @@ class AuthService extends GetxService {
   // ===== Auth APIs =====
   Future<Map<String, dynamic>> login(String phoneEmail, String password) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/login'),
+      Uri.parse('$baseUrl/login'),
       headers: {'Content-Type': 'application/json'},
       body: json.jsonEncode({'phoneEmail': phoneEmail, 'password': password}),
     );
@@ -155,7 +151,7 @@ class AuthService extends GetxService {
     try {
       final response = await http
           .get(
-        Uri.parse('$_baseUrl/check-token'),
+        Uri.parse('$baseUrl/check-token'),
         headers: {'Authorization': 'Bearer $token'},
       )
           .timeout(const Duration(seconds: 10));
@@ -166,7 +162,7 @@ class AuthService extends GetxService {
         if (refreshToken != null) {
           print('Token expired (401), attempting to refresh');
           final refreshResponse = await http.post(
-            Uri.parse('$_baseUrl/refresh'),
+            Uri.parse('$baseUrl/refresh'),
             headers: {'Content-Type': 'application/json'},
             body: json.jsonEncode({'refreshToken': refreshToken}),
           );
@@ -204,7 +200,7 @@ class AuthService extends GetxService {
       String phone, String name, String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/register'),
+        Uri.parse('$baseUrl/register'),
         body: json.jsonEncode({
           'phone': phone,
           'name': name,
@@ -249,7 +245,7 @@ class AuthService extends GetxService {
 
   Future<bool> forgotPassword(String phoneEmail) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/forgot-password'),
+      Uri.parse('$baseUrl/forgot-password'),
       headers: {'Content-Type': 'application/json'},
       body: json.jsonEncode({'phoneEmail': phoneEmail}),
     );
@@ -262,7 +258,7 @@ class AuthService extends GetxService {
 
   Future<bool> verifyOTP(String phoneEmail, String otp) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/verify-otp'),
+      Uri.parse('$baseUrl/verify-otp'),
       headers: {'Content-Type': 'application/json'},
       body: json.jsonEncode({'phoneEmail': phoneEmail, 'otp': otp}),
     );
@@ -277,7 +273,7 @@ class AuthService extends GetxService {
   Future<bool> resetPassword(String phoneEmail, String newPassword) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/reset-password'),
+        Uri.parse('$baseUrl/reset-password'),
         body: json.jsonEncode(
             {'phoneEmail': phoneEmail, 'newPassword': newPassword}),
         headers: {'Content-Type': 'application/json'},
@@ -293,19 +289,6 @@ class AuthService extends GetxService {
     } catch (e) {
       Get.snackbar("Lỗi", "Kết nối đến server thất bại");
       return false;
-    }
-  }
-
-  // Giữ nguyên để các màn gọi API sản phẩm dùng
-  Future<List<dynamic>> fetchProductsByCategory(String category) async {
-    final response =
-    await http.get(Uri.parse('$baseUrl/products?category=$category'));
-
-    if (response.statusCode == 200) {
-      final data = json.jsonDecode(response.body);
-      return data['products'];
-    } else {
-      throw Exception('Failed to load products: ${response.statusCode}');
     }
   }
 }

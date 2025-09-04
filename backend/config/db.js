@@ -11,7 +11,6 @@ const dbConfig = {
 
 const pool = mysql.createPool(dbConfig);
 
-// Kiểm tra kết nối ban đầu (không dùng .then)
 pool.getConnection()
   .then(connection => {
     console.log('Connected to MySQL');
