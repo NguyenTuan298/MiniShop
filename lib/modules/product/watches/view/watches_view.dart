@@ -1,23 +1,25 @@
-// lib/screens/laptop_view.dart
+// lib/screens/watches_view.dart
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../../../cart/controller/cart_controller.dart';
-import '../controller/beverage_controller.dart';
-import 'package:minishop/data/models/product_model.dart'; // NEW
+import '../controller/watches_controller.dart';
+import 'package:minishop/data/models/product_model.dart';
 
-class BeverageView extends StatelessWidget {
-  const BeverageView({super.key});
+
+class WatchesView extends StatelessWidget {
+  const WatchesView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final BeverageController controller = Get.find<BeverageController>();
+    final WatchesController controller = Get.find<WatchesController>();
     final CartController cartController = Get.find<CartController>();
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Đồ Uống',
+          'Đồng Hồ',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -52,7 +54,6 @@ class BeverageView extends StatelessWidget {
       }),
     );
   }
-
 
   Widget _buildProductCard({
     required String name,
@@ -111,7 +112,7 @@ class BeverageView extends StatelessWidget {
                         final product = Product(
                           id: ((name + imageUrl).hashCode) & 0x7fffffff, // id ổn định từ name+image
                           name: name,
-                          category: 'beverage',                          // đúng category màn này
+                          category: 'watches',                          // đúng category màn này
                           description: '',
                           price: price,
                           imageUrl: imageUrl,

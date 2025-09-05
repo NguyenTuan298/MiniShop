@@ -1,4 +1,4 @@
-// lib/screens/food_view.dart
+// lib/screens/watches_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/Get.dart';
 import 'package:get/get_core/src/get_main.dart';

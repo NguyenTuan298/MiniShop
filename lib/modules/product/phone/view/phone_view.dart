@@ -2,22 +2,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../cart/controller/cart_controller.dart';
-import '../controller/beverage_controller.dart';
+import '../controller/phone_controller.dart';
 import 'package:minishop/data/models/product_model.dart'; // NEW
 
-class BeverageView extends StatelessWidget {
-  const BeverageView({super.key});
+class PhoneView extends StatelessWidget {
+  const PhoneView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final BeverageController controller = Get.find<BeverageController>();
+    final PhoneController controller = Get.find<PhoneController>();
     final CartController cartController = Get.find<CartController>();
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Đồ Uống',
+          'Điện Thoại',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -111,7 +111,7 @@ class BeverageView extends StatelessWidget {
                         final product = Product(
                           id: ((name + imageUrl).hashCode) & 0x7fffffff, // id ổn định từ name+image
                           name: name,
-                          category: 'beverage',                          // đúng category màn này
+                          category: 'phone',                          // đúng category màn này
                           description: '',
                           price: price,
                           imageUrl: imageUrl,

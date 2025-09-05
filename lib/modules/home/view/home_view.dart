@@ -20,57 +20,45 @@ class _HomeViewState extends State<HomeView> {
   final HomeController controller = Get.find<HomeController>();
   final CartController cartController = Get.find<CartController>();
 
-  // Giữ nguyên ProductService (KHÔNG sửa file service)
   final ProductService _productService = Get.put(ProductService());
 
-  // ================== CẤU HÌNH GỢI Ý (đa danh mục) ==================
-  // Chọn nhiều danh mục để gợi ý (đổi theo DB của bạn)
   static const List<String> _recommendedCategories = [
     'dien_tu',
     'thoi_trang',
     'thuc_pham',
   ];
 
-  // Giới hạn hiển thị tổng & số lượng mỗi danh mục
   static const int _maxRecommended = 12;
   static const int _perCategory = 6;
 
-  // Future danh sách gợi ý đã trộn
   late Future<List<Map<String, dynamic>>> _recFuture;
 
   @override
   void initState() {
     super.initState();
-    // Lấy gợi ý đa danh mục ngay khi mở trang
     _recFuture = _fetchRecommendedMulti();
-    // Khởi động tải promotions nếu controller chưa có
     if (controller.promotions.isEmpty && !controller.isLoadingPromos.value) {
       controller.loadPromotions();
     }
   }
 
-  // Gọi API cho nhiều danh mục (không sửa ProductService),
-  // gom theo round-robin, khử trùng lặp theo id, cắt theo _maxRecommended.
   Future<List<Map<String, dynamic>>> _fetchRecommendedMulti() async {
     Future<List<dynamic>> _safeFetch(String cat) async {
       try {
         return await _productService.fetchProductsByCategory(cat);
       } catch (_) {
-        return <dynamic>[]; // Nếu 1 danh mục lỗi vẫn trả về rỗng để không “đổ bể” cả trang
+        return <dynamic>[];
       }
     }
 
-    // Gọi song song các danh mục
     final rawLists = await Future.wait(
       _recommendedCategories.map(_safeFetch),
     );
 
-    // Chuẩn hóa từng danh mục: giữ Map và cắt theo _perCategory
     final perCat = rawLists
         .map((lst) => lst.whereType<Map<String, dynamic>>().take(_perCategory).toList())
         .toList();
 
-    // Trộn vòng-tròn (round-robin) để xen kẽ danh mục
     final merged = <Map<String, dynamic>>[];
     for (int i = 0;; i++) {
       bool added = false;
@@ -83,7 +71,6 @@ class _HomeViewState extends State<HomeView> {
       if (!added) break;
     }
 
-    // Khử trùng lặp theo id (nếu API trả trùng giữa các danh mục)
     final seen = <int>{};
     final unique = <Map<String, dynamic>>[];
     for (final m in merged) {
@@ -94,12 +81,10 @@ class _HomeViewState extends State<HomeView> {
           unique.add(m);
         }
       } else {
-        // Không có id chuẩn -> vẫn thêm để tránh mất dữ liệu
         unique.add(m);
       }
     }
 
-    // Giới hạn tổng số item hiển thị
     return unique.take(_maxRecommended).toList();
   }
 
@@ -119,7 +104,6 @@ class _HomeViewState extends State<HomeView> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // Làm mới cả promotions và gợi ý đa danh mục
           await controller.loadPromotions();
           setState(() {
             _recFuture = _fetchRecommendedMulti();
@@ -131,7 +115,6 @@ class _HomeViewState extends State<HomeView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ================== Tin nổi bật ==================
               Text(
                 'Tin nổi bật',
                 style: TextStyle(
@@ -204,7 +187,6 @@ class _HomeViewState extends State<HomeView> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          // Hiển thị phần trăm giảm nếu có
                                           Text(
                                             'Giảm ${p.discountPercent ?? 0}%',
                                             style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
@@ -230,7 +212,6 @@ class _HomeViewState extends State<HomeView> {
 
               const SizedBox(height: 16),
 
-              // ================== Danh mục nổi bật ==================
               const Text(
                 'Danh mục nổi bật',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -251,7 +232,6 @@ class _HomeViewState extends State<HomeView> {
 
               const SizedBox(height: 16),
 
-              // ================== Sản phẩm gợi ý (LIÊN KẾT API) ==================
               const Text(
                 'Sản phẩm gợi ý',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -454,7 +434,9 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _buildCategoryItem(IconData icon, String label) {
     return Container(
+      padding: const EdgeInsets.all(20),
       width: 90,
+      height: 150,
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: Colors.grey[200],
@@ -465,7 +447,52 @@ class _HomeViewState extends State<HomeView> {
         children: [
           Icon(icon, size: 32, color: Colors.blue),
           const SizedBox(height: 8),
-          Text(label, textAlign: TextAlign.center),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                print('Nhấn vào: $label'); // Debug
+                switch (label) {
+                  case 'Điện thoại':
+                    try {
+                      Get.toNamed('/phone');
+                    } catch (e) {
+                      Get.snackbar('Lỗi', 'Không thể chuyển đến /phone: $e');
+                    }
+                    break;
+                  case 'Laptop':
+                    try {
+                      Get.toNamed('/laptop');
+                    } catch (e) {
+                      Get.snackbar('Lỗi', 'Không thể chuyển đến /laptop: $e');
+                    }
+                    break;
+                  case 'Đồng hồ':
+                    try {
+                      Get.toNamed('/watches');
+                    } catch (e) {
+                      Get.snackbar('Lỗi', 'Không thể chuyển đến /watches: $e');
+                    }
+                    break;
+                  case 'Tivi':
+                    try {
+                      Get.toNamed('/tv');
+                    } catch (e) {
+                      Get.snackbar('Lỗi', 'Không thể chuyển đến /tv: $e');
+                    }
+                    break;
+                  default:
+                    Get.snackbar('Thông báo', 'Trang chưa có');
+                }
+              },
+              behavior: HitTestBehavior.translucent,
+            ),
+          ),
         ],
       ),
     );

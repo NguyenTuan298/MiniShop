@@ -1,4 +1,3 @@
-// lib/modules/home/controller/home_controller.dart
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:minishop/data/models/promotion.dart';
@@ -24,7 +23,7 @@ class HomeController extends GetxController {
       promoError.value = null;
 
       final rawList = await _service.fetchActiveTop10();
-      final fixed = await _resolveImages(rawList); // ✅ xử lý ảnh trước khi hiển thị
+      final fixed = await _resolveImages(rawList);
       promotions.assignAll(fixed);
     } catch (e) {
       promoError.value = e.toString();
@@ -34,22 +33,18 @@ class HomeController extends GetxController {
     }
   }
 
-  // ================= Helpers =================
 
   String _originFromBase() {
-    final u = Uri.parse(AuthService.baseUrl); // ví dụ: https://minishop-kto7.onrender.com/api
+    final u = Uri.parse(AuthService.baseUrl);
     final port = (u.hasPort && u.port != 80 && u.port != 443) ? ':${u.port}' : '';
     return '${u.scheme}://${u.host}$port'; // https://minishop-kto7.onrender.com
   }
 
-  // Tạo danh sách các URL ứng viên cho 1 ảnh (từ raw)
   List<String> _candidatesFor(String raw) {
     final origin = _originFromBase();
     final r = raw.trim();
 
-    // 1) Nếu đã là http/https -> ưu tiên dùng luôn
     if (r.startsWith('http://') || r.startsWith('https://')) {
-      // thêm phương án fallback nếu đường dẫn chứa /images/banners/
       if (r.contains('/images/banners/')) {
         final fname = r.split('/').last;
         return [r, '$origin/images/$fname'];
@@ -57,10 +52,8 @@ class HomeController extends GetxController {
       return [r];
     }
 
-    // 2) Nếu là đường dẫn bắt đầu bằng '/' -> ghép origin + raw
     if (r.startsWith('/')) {
       final first = '$origin$r';
-      // nếu có /images/banners/, thêm fallback /images/<file>
       if (r.contains('/images/banners/')) {
         final fname = r.split('/').last;
         return [first, '$origin/images/$fname'];
@@ -68,12 +61,10 @@ class HomeController extends GetxController {
       return [first];
     }
 
-    // 3) Còn lại coi như tên file trần -> /images/<file> trên cùng origin
     final first = '$origin/images/$r';
     return [first];
   }
 
-  // Kiểm tra URL có tồn tại ảnh không (HEAD trước, nếu server không hỗ trợ HEAD thì thử GET nhẹ)
   Future<bool> _urlHasImage(String url) async {
     try {
       final uri = Uri.parse(url);
@@ -93,7 +84,6 @@ class HomeController extends GetxController {
     return false;
   }
 
-  // Trả về Promotion với imageUrl đã được “chọn” URL chạy được, nếu không có thì dùng placeholder
   Future<Promotion> _pickWorkingImage(Promotion p) async {
     final cands = _candidatesFor(p.imageUrl);
     for (final u in cands) {
@@ -101,19 +91,16 @@ class HomeController extends GetxController {
         return p.copyWith(imageUrl: u);
       }
     }
-    // placeholder (đảm bảo luôn hiển thị ảnh)
     final ph = 'https://picsum.photos/seed/${p.id}/800/450';
     return p.copyWith(imageUrl: ph);
   }
 
-  // Xử lý toàn bộ danh sách promotions song song
   Future<List<Promotion>> _resolveImages(List<Promotion> list) async {
     final tasks = list.map(_pickWorkingImage).toList();
     return await Future.wait(tasks);
   }
 }
 
-// ✅ tiện lợi: thêm extension copyWith cho Promotion (không sửa model gốc)
 extension _PromotionCopy on Promotion {
   Promotion copyWith({
     int? id,

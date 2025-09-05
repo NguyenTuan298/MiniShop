@@ -32,14 +32,22 @@ import 'modules/product/food/binding/food_binding.dart';
 import 'modules/product/food/view/food_view.dart';
 import 'modules/product/household/binding/household_binding.dart';
 import 'modules/product/household/view/household_view.dart';
+import 'modules/product/laptop/binding/laptop_binding.dart';
+import 'modules/product/laptop/view/laptop_view.dart';
 import 'modules/product/life - utilities/binding/life_utilities_binding.dart';
 import 'modules/product/life - utilities/view/life_utilities_view.dart';
+import 'modules/product/phone/binding/phone_binding.dart';
+import 'modules/product/phone/view/phone_view.dart';
 import 'modules/product/sports/binding/sports_binding.dart';
 import 'modules/product/sports/view/sports_view.dart';
 import 'modules/product/toys - entertainment/binding/toys_entertainment_binding.dart';
 import 'modules/product/toys - entertainment/view/toys_entertainment_view.dart';
 import 'modules/product/travel/binding/travel_binding.dart';
 import 'modules/product/travel/view/travel_view.dart';
+import 'modules/product/tv/binding/tv_binding.dart';
+import 'modules/product/tv/view/tv_view.dart';
+import 'modules/product/watches/binding/watches_binding.dart';
+import 'modules/product/watches/view/watches_view.dart';
 import 'modules/register/binding/register_binding.dart';
 import 'modules/register/view/register_view.dart';
 import 'modules/reset_password/binding/reset_password_binding.dart';
@@ -77,6 +85,10 @@ class AppRoutes {
   static const SPORTS = '/sports';
   static const TRAVEL = '/travel';
   static const TOYS_ENTERTAINMENT = '/toys-entertainment';
+  static const PHONE = '/phone';
+  static const LAPTOP = '/laptop';
+  static const WATCHES = '/watches';
+  static const TV = '/tv';
 
 
 }
@@ -252,6 +264,30 @@ class AppPages {
       binding: ToysEntertainmentBinding(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: AppRoutes.PHONE,
+      page: () => const PhoneView(),
+      binding: PhoneBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.LAPTOP,
+      page: () => const LaptopView(),
+      binding: LaptopBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.WATCHES,
+      page: () => const WatchesView(),
+      binding: WatchesBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.TV,
+      page: () => const TvView(),
+      binding: TvBinding(),
+      transition: Transition.fadeIn,
     ),
   ];
 }
