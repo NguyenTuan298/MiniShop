@@ -1,4 +1,3 @@
-// lib/modules/home/view/home_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../cart/controller/cart_controller.dart';
@@ -39,6 +38,10 @@ class _HomeViewState extends State<HomeView> {
     _recFuture = _fetchRecommendedMulti();
     if (controller.promotions.isEmpty && !controller.isLoadingPromos.value) {
       controller.loadPromotions();
+    }
+    // Khởi tạo danh sách danh mục nổi bật nếu chưa có
+    if (controller.highlightedCategories.isEmpty) {
+      controller.loadHighlightedCategories();
     }
   }
 
@@ -217,18 +220,21 @@ class _HomeViewState extends State<HomeView> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                height: 100,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _buildCategoryItem(Icons.phone_android, 'Điện thoại'),
-                    _buildCategoryItem(Icons.computer, 'Laptop'),
-                    _buildCategoryItem(Icons.watch, 'Đồng hồ'),
-                    _buildCategoryItem(Icons.tv, 'Tivi'),
-                  ],
-                ),
-              ),
+              // Thay bằng GridView.builder giống CategoryListView
+              Obx(() {
+                return SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    scrollDirection: Axis.horizontal, // cuộn ngang
+                    itemCount: controller.highlightedCategories.length,
+                    itemBuilder: (context, index) {
+                      final category = controller.highlightedCategories[index];
+                      return _buildCategoryItem(category.icon, category.name);
+                    },
+                  ),
+                );
+              }),
 
               const SizedBox(height: 16),
 
@@ -302,7 +308,6 @@ class _HomeViewState extends State<HomeView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Ảnh: tự nhận URL/asset
                             Expanded(
                               child: Stack(
                                 children: [
@@ -433,70 +438,51 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildCategoryItem(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      width: 90,
-      height: 150,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 32, color: Colors.blue),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                print('Nhấn vào: $label'); // Debug
-                switch (label) {
-                  case 'Điện thoại':
-                    try {
-                      Get.toNamed('/phone');
-                    } catch (e) {
-                      Get.snackbar('Lỗi', 'Không thể chuyển đến /phone: $e');
-                    }
-                    break;
-                  case 'Laptop':
-                    try {
-                      Get.toNamed('/laptop');
-                    } catch (e) {
-                      Get.snackbar('Lỗi', 'Không thể chuyển đến /laptop: $e');
-                    }
-                    break;
-                  case 'Đồng hồ':
-                    try {
-                      Get.toNamed('/watches');
-                    } catch (e) {
-                      Get.snackbar('Lỗi', 'Không thể chuyển đến /watches: $e');
-                    }
-                    break;
-                  case 'Tivi':
-                    try {
-                      Get.toNamed('/tv');
-                    } catch (e) {
-                      Get.snackbar('Lỗi', 'Không thể chuyển đến /tv: $e');
-                    }
-                    break;
-                  default:
-                    Get.snackbar('Thông báo', 'Trang chưa có');
-                }
-              },
-              behavior: HitTestBehavior.translucent,
+    return GestureDetector(
+      onTap: () {
+        switch (label) {
+          case 'Điện thoại':
+            Get.toNamed('/phone');
+            break;
+          case 'Laptop':
+            Get.toNamed('/laptop');
+            break;
+          case 'Đồng hồ':
+            Get.toNamed('/watches');
+            break;
+          case 'Tivi':
+            Get.toNamed('/tv');
+            break;
+          default:
+            Get.snackbar('Thông báo', 'Trang chưa có');
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        width: 90,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 32, color: Colors.blue),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 14),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
 }
 
 // Skeleton cho grid “Sản phẩm gợi ý”

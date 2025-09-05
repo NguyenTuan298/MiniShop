@@ -46,43 +46,43 @@ class CategoryListView extends GetView<CategoryController> {
                 itemCount: controller.categories.length,
                 itemBuilder: (context, index) {
                   final category = controller.categories[index];
-                  return GestureDetector(
-                    onTap: () {
-                      switch (categories[index]) {
-                        case 'Điện tử':
-                          Get.toNamed('/electronics');
-                          break;
-                        case 'Thời trang':
-                          Get.toNamed('/fashion');
-                          break;
-                          case 'Mỹ phẩm - Làm đẹp':
-                          Get.toNamed('/cosmetics-beauty');
-                          break;
-                        case 'Đồ gia dụng':
-                          Get.toNamed('/household');
-                          break;
-                        case 'Đời sống - Tiện ích':
-                          Get.toNamed('/life-utilities');
-                          break;
-                          case 'Đồ chơi - Giải trí':
-                          Get.toNamed('/toys-entertainment');
-                          break;
-                        case 'Thể thao':
-                          Get.toNamed('/sports');
-                          break;
-                          case 'Du lịch':
-                          Get.toNamed('/travel');
-                          break;
-                        case 'Thực phẩm':
-                          Get.toNamed('/food');
-                          break;
-                        case 'Đồ uống':
-                          Get.toNamed('/beverage');
-                          break;
-                        default:
-                          Get.snackbar('Thông báo', 'Trang chưa có');
-                      }
-                    },
+                    return GestureDetector(
+                      onTap: () {
+                        switch (categories[index]) {
+                          case 'Điện tử':
+                            Get.toNamed('/electronics');
+                            break;
+                          case 'Thời trang':
+                            Get.toNamed('/fashion');
+                            break;
+                            case 'Mỹ phẩm - Làm đẹp':
+                            Get.toNamed('/cosmetics-beauty');
+                            break;
+                          case 'Đồ gia dụng':
+                            Get.toNamed('/household');
+                            break;
+                          case 'Đời sống - Tiện ích':
+                            Get.toNamed('/life-utilities');
+                            break;
+                            case 'Đồ chơi - Giải trí':
+                            Get.toNamed('/toys-entertainment');
+                            break;
+                          case 'Thể thao':
+                            Get.toNamed('/sports');
+                            break;
+                            case 'Du lịch':
+                            Get.toNamed('/travel');
+                            break;
+                          case 'Thực phẩm':
+                            Get.toNamed('/food');
+                            break;
+                          case 'Đồ uống':
+                            Get.toNamed('/beverage');
+                            break;
+                          default:
+                            Get.snackbar('Thông báo', 'Trang chưa có');
+                        }
+                      },
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),

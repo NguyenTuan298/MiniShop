@@ -1,8 +1,18 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:minishop/data/models/promotion.dart';
 import 'package:minishop/data/services/promotion_service.dart';
 import 'package:minishop/data/services/auth_service.dart';
+
+
+class Category_home{
+  final String name;
+  final IconData icon;
+
+  Category_home({required this.name, required this.icon});
+}
 
 class HomeController extends GetxController {
   final promotions = <Promotion>[].obs;
@@ -10,11 +20,14 @@ class HomeController extends GetxController {
   final promoError = RxnString();
 
   final _service = PromotionService();
+  // Thêm danh sách danh mục nổi bật
+  var highlightedCategories = <Category_home>[].obs;
 
   @override
   void onInit() {
     super.onInit();
     loadPromotions();
+    loadHighlightedCategories();
   }
 
   Future<void> loadPromotions() async {
@@ -31,6 +44,15 @@ class HomeController extends GetxController {
     } finally {
       isLoadingPromos.value = false;
     }
+  }
+  void loadHighlightedCategories() {
+    // Giả sử danh sách danh mục nổi bật
+    highlightedCategories.assignAll([
+      Category_home(name: 'Điện thoại', icon: Icons.phone_android),
+      Category_home(name: 'Laptop', icon: Icons.computer),
+      Category_home(name: 'Đồng hồ', icon: Icons.watch),
+      Category_home(name: 'Tivi', icon: Icons.tv),
+    ]);
   }
 
 
